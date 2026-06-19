@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Dashboard - Control de Charolas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: #F0F2F5; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(26, 74, 111, 0.05); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #1A4A6F, #3B82F6); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #0B2B4E, #2563EB); }
+        
+        .modal-body { max-height: calc(85vh - 120px); overflow-y: auto; }
+        .movimiento-list, .ruta-list { overflow: visible; max-height: none; }
+        
+        .dashboard-header { 
+            background: linear-gradient(135deg, #0B2B4E 0%, #1A4A6F 100%); 
+            color: white; 
+            padding: 14px 28px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            flex-shrink: 0; 
+        }
+        .header-content { 
+            max-width: 100%; 
+            margin: 0 auto; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            gap: 12px; 
+        }
+        .logo-area { display: flex; align-items: center; gap: 14px; }
+        .logo-area img { max-height: 42px; }
+        .logo-area h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.5px; }
+        .logo-area p { font-size: 0.7rem; opacity: 0.8; }
+        .header-buttons { display: flex; gap: 10px; }
+        .btn-icon { 
+            background: rgba(255,255,255,0.12); 
+            border: none; 
+            padding: 7px 18px; 
+            border-radius: 30px; 
+            color: white; 
+            cursor: pointer; 
+            font-weight: 500; 
+            font-size: 0.8rem; 
+            transition: all 0.2s; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
+        .btn-icon:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
+        
+        .filters { 
+            background: white; 
+            margin: 10px 18px; 
+            padding: 10px 24px; 
+            border-radius: 16px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+            flex-shrink: 0; 
+        }
+        .week-selector { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .week-selector label { font-weight: 600; color: #1A4A6F; font-size: 0.85rem; }
+        .week-selector select { 
+            padding: 6px 16px; 
+            border-radius: 30px; 
+            border: 1px solid #E2E8F0; 
+            font-size: 0.85rem; 
+            background: white; 
+            cursor: pointer; 
+            font-weight: 500; 
+        }
+        .week-info { 
+            background: #E9D8FD; 
+            padding: 5px 20px; 
+            border-radius: 30px; 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            color: #1A4A6F; 
+        }
+        
+        .cards-container { 
+            max-width: 100%; 
+            margin: 0 12px 12px 12px; 
+            padding: 0 12px; 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 16px; 
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            align-content: stretch;
+        }
+        .card { 
+            background: white; 
+            border-radius: 18px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+            transition: all 0.3s ease; 
+            border: 1px solid rgba(0,0,0,0.04); 
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15); }
+        .card:hover::after { box-shadow: inset 0 0 0 2px rgba(26,74,111,0.2), 0 0 0 4px rgba(26,74,111,0.1); }
+        
+        .card-header { 
+            background: linear-gradient(135deg, #1A4A6F 0%, #0B2B4E 100%); 
+            color: white; 
+            padding: 14px 10px; 
+            text-align: center; 
+            flex-shrink: 0;
+        }
+        .card-header h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.3px; }
+        .card-header .base-date { font-size: 0.7rem; opacity: 0.8; margin-top: 4px; }
+        
+        .card-stats { 
+            padding: 16px 18px; 
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .stat-main { margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #EDF2F7; }
+        .stat-main-label { 
+            font-size: 0.7rem; 
+            font-weight: 600; 
+            color: #718096; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            margin-bottom: 6px; 
+            display: block; 
+        }
+        .stat-main-value { font-size: 1.2rem; font-weight: 600; }
+        .stat-main-value .lila { color: #6B46C1; }
+        .stat-main-value .cordoba { color: #DD6B20; }
+        
+        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .stat-label { font-size: 0.75rem; font-weight: 500; color: #4A5568; }
+        .stat-numbers { display: flex; gap: 16px; }
+        .stat-number { font-size: 0.95rem; font-weight: 600; }
+        .stat-number.lila { color: #6B46C1; }
+        .stat-number.cordoba { color: #DD6B20; }
+        .stat-number.positive { color: #276749; }
+        .stat-number.negative { color: #C53030; }
+        
+        .envios-ruta { 
+            margin-top: 10px; 
+            padding-top: 10px; 
+            border-top: 1px solid #EDF2F7; 
+            flex-shrink: 0;
+        }
+        .envios-ruta-title { 
+            font-size: 0.7rem; 
+            font-weight: 600; 
+            color: #E53E3E; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
+        .ruta-count { 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            color: #E53E3E; 
+            background: #FEEBC8; 
+            display: inline-block; 
+            padding: 1px 8px; 
+            border-radius: 20px; 
+        }
+        
+        .card-footer { 
+            background: #F7FAFC; 
+            padding: 10px; 
+            text-align: center; 
+            border-top: 1px solid #EDF2F7; 
+            flex-shrink: 0;
+        }
+        .btn-detalle { 
+            background: none; 
+            border: none; 
+            color: #1A4A6F; 
+            font-size: 0.75rem; 
+            cursor: pointer; 
+            font-weight: 600; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 5px; 
+            padding: 4px 14px; 
+            border-radius: 30px; 
+        }
+        .btn-detalle:hover { background: #E2E8F0; color: #0B2B4E; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 24px; max-width: 700px; width: 90%; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .modal-header { background: linear-gradient(135deg, #1A4A6F 0%, #0B2B4E 100%); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-radius: 24px 24px 0 0; }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 600; }
+        .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+        .modal-close:hover { opacity: 1; transform: scale(1.1); }
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+        .modal-footer { background: #F7FAFC; padding: 14px 24px; text-align: right; border-top: 1px solid #EDF2F7; flex-shrink: 0; border-radius: 0 0 24px 24px; }
+        
+        .detail-card { background: #F8FAFC; border-radius: 16px; padding: 14px; margin-bottom: 16px; border: 1px solid #EDF2F7; }
+        .detail-title { font-size: 0.65rem; font-weight: 700; color: #1A4A6F; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 5px; border-bottom: 2px solid #1A4A6F; display: inline-block; }
+        
+        .detail-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: 12px; margin-top: 10px; }
+        .detail-row-label { font-size: 0.7rem; font-weight: 600; color: #1A4A6F; }
+        .detail-row-value { font-size: 0.7rem; font-weight: 500; color: #64748B; }
+        
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        .detail-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: 12px; }
+        .detail-label { font-size: 0.65rem; color: #64748B; font-weight: 500; }
+        .detail-value { font-size: 0.8rem; font-weight: 700; color: #1E293B; text-align: right; }
+        .detail-value.lila { color: #6B46C1; }
+        .detail-value.cordoba { color: #DD6B20; }
+        .detail-value.positive { color: #276749; }
+        .detail-value.negative { color: #C53030; }
+        
+        .movimiento-list, .ruta-list { background: white; border-radius: 12px; overflow: visible; border: 1px solid #EDF2F7; margin-top: 10px; }
+        .movimiento-item, .ruta-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #EDF2F7; font-size: 0.65rem; flex-wrap: wrap; gap: 6px; }
+        .movimiento-item:last-child, .ruta-item:last-child { border-bottom: none; }
+        .movimiento-tipo { font-weight: 600; padding: 2px 8px; border-radius: 20px; font-size: 0.55rem; }
+        .movimiento-tipo.envio { background: #FEE2E2; color: #DC2626; }
+        .movimiento-tipo.recepcion { background: #DCFCE7; color: #16A34A; }
+        
+        .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .loader-overlay.active { opacity: 1; visibility: visible; }
+        .loader-content { text-align: center; }
+        .loader-logo { margin-bottom: 40px; animation: pulseGlow 2s ease-in-out infinite; }
+        .loader-logo img { max-width: 120px; }
+        @keyframes pulseGlow { 0%,100% { filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); } 50% { filter: drop-shadow(0 0 30px rgba(255,255,255,0.6)); } }
+        .loader-bars { display: flex; justify-content: center; gap: 12px; }
+        .loader-bars span { width: 10px; height: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 5px; animation: barBounce 1s ease-in-out infinite; }
+        .loader-bars span:nth-child(1) { animation-delay: 0s; }
+        .loader-bars span:nth-child(2) { animation-delay: 0.1s; }
+        .loader-bars span:nth-child(3) { animation-delay: 0.2s; }
+        .loader-bars span:nth-child(4) { animation-delay: 0.3s; }
+        .loader-bars span:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes barBounce { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(2); } }
+        
+        @media (max-width: 1200px) { .cards-container { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 992px) { .cards-container { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 768px) { .cards-container { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .cards-container { grid-template-columns: 1fr; } }
+        
+        .dashboard-footer { 
+            background: #2D3748; 
+            color: #A0AEC0; 
+            text-align: center; 
+            padding: 8px; 
+            font-size: 0.65rem; 
+            flex-shrink: 0; 
+        }
+        .btn-modal { background: #1A4A6F; color: white; border: none; padding: 6px 20px; border-radius: 30px; cursor: pointer; font-weight: 500; font-size: 0.75rem; }
+        .btn-modal:hover { background: #0B2B4E; }
+    </style>
+</head>
+<body>
+    <div id="loaderOverlay" class="loader-overlay">
+        <div class="loader-content">
+            <div class="loader-logo"><img src="Mesa de control.png" alt="Logo"></div>
+            <div class="loader-bars"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+    </div>
+
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="logo-area">
+                <img src="Mesa de control.png" alt="Logo">
+                <div>
+                    <h1>Control de Charolas</h1>
+                    <p>Reporte ejecutivo de inventario semanal</p>
+                </div>
+            </div>
+            <div class="header-buttons">
+                <button class="btn-icon" onclick="abrirIndex()">📋 Registro</button>
+                <button class="btn-icon" onclick="exportarExcel()">📎 Exportar</button>
+                <button class="btn-icon" onclick="cargarDatos()">🔄 Actualizar</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="filters">
+        <div class="week-selector">
+            <label>📅 Semana:</label>
+            <select id="semanaSelect" onchange="cambiarSemana()"></select>
+        </div>
+        <div class="week-info" id="weekInfo"></div>
+    </div>
+
+    <div class="cards-container" id="cardsContainer"></div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Detalle de inventario</h3>
+                <button class="modal-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn-modal" onclick="cerrarModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="dashboard-footer">
+        <p>SISTEMA DE CONTROL DE CHAROLAS | © E.LUGO 2026</p>
+    </footer>
+
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzGtW99XYWqRDM-sEExJIh4Ia6Ix_1Ur2aVrAsFdbvhwIa0901g4hOPgz4pROl9ms4MoQ/exec';
+        
+        const CEDIS_LIST = ['COA', 'MONTERREY', 'GUADALAJARA', 'HERMOSILLO', 'CANCUN'];
+        
+        let datosBD = [];
+        let enviosPendientes = [];
+        let semanasDisponibles = [];
+        let semanaActual = null;
+        let datosCache = {};
+
+        function showLoader() {
+            document.getElementById('loaderOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideLoader() {
+            document.getElementById('loaderOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function formatearFechaISO(isoString) {
+            if (!isoString) return 'Sin fecha';
+            if (isoString.match(/\d{2}-\w{3}-\d{2}/)) return isoString.split(' ')[0];
+            if (isoString.includes('1899-12-31')) return 'Sin fecha';
+            
+            try {
+                const fecha = new Date(isoString);
+                if (isNaN(fecha.getTime()) || fecha.getFullYear() < 2000) return 'Sin fecha';
+                const dias = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                const dia = fecha.getDate().toString().padStart(2, '0');
+                const mes = dias[fecha.getMonth()];
+                const año = fecha.getFullYear().toString().slice(-2);
+                return `${dia}-${mes}-${año}`;
+            } catch(e) {
+                return 'Sin fecha';
+            }
+        }
+
+        function formatearFechaMovimiento(fechaStr, horaStr) {
+            if (!fechaStr) return 'Sin fecha';
+            if (fechaStr.match(/\d{2}-\w{3}-\d{2}/)) return fechaStr.split(' ')[0];
+            if (fechaStr.includes('T')) {
+                const fecha = new Date(fechaStr);
+                if (isNaN(fecha.getTime()) || fecha.getFullYear() < 2000) return 'Sin fecha';
+                const dias = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                const dia = fecha.getDate().toString().padStart(2, '0');
+                const mes = dias[fecha.getMonth()];
+                const año = fecha.getFullYear().toString().slice(-2);
+                return `${dia}-${mes}-${año}`;
+            }
+            return fechaStr;
+        }
+
+        function formatearFechaSolo(fechaStr) {
+            if (!fechaStr) return 'Sin fecha';
+            if (fechaStr.match(/\d{2}-\w{3}-\d{2}/)) return fechaStr.split(' ')[0];
+            if (fechaStr.includes('T')) return formatearFechaISO(fechaStr);
+            return fechaStr;
+        }
+
+        function parseFecha(fechaStr, horaStr) {
+            if (!fechaStr) return null;
+            if (fechaStr.match(/\d{2}-\w{3}-\d{2}/)) {
+                const meses = {'ene':'01','feb':'02','mar':'03','abr':'04','may':'05','jun':'06','jul':'07','ago':'08','sep':'09','oct':'10','nov':'11','dic':'12'};
+                const partes = fechaStr.split('-');
+                const mes = meses[partes[1].toLowerCase()];
+                const año = '20' + partes[2];
+                let hora = '00:00';
+                if (horaStr && horaStr.match(/\d{2}:\d{2}/)) hora = horaStr;
+                return new Date(`${año}-${mes}-${partes[0]}T${hora}:00`);
+            }
+            if (fechaStr.includes('T')) return new Date(fechaStr);
+            return new Date(fechaStr);
+        }
+
+        function obtenerNumeroSemana(fecha) {
+            const inicio = new Date(fecha.getFullYear(), 0, 1);
+            const diff = (fecha - inicio) + ((inicio.getDay() - 1) * 86400000);
+            return Math.ceil(diff / 604800000);
+        }
+
+        function obtenerInicioSemana(fecha) {
+            const dia = fecha.getDay();
+            const inicio = new Date(fecha);
+            inicio.setDate(fecha.getDate() - (dia === 0 ? 6 : dia - 1));
+            inicio.setHours(0, 0, 0, 0);
+            return inicio;
+        }
+
+        function obtenerFinSemana(fecha) {
+            const inicio = obtenerInicioSemana(fecha);
+            const fin = new Date(inicio);
+            fin.setDate(inicio.getDate() + 6);
+            fin.setHours(23, 59, 59, 999);
+            return fin;
+        }
+
+        function formatearRangoSemana(fecha) {
+            const inicio = obtenerInicioSemana(fecha);
+            const fin = obtenerFinSemana(fecha);
+            return `${formatearFechaISO(inicio.toISOString())} al ${formatearFechaISO(fin.toISOString())}`;
+        }
+
+        function extraerSemanas() {
+            const semanasMap = new Map();
+            for (const row of datosBD) {
+                const fecha = parseFecha(row[1], row[2]);
+                if (fecha && fecha.getFullYear() > 2000) {
+                    const numSemana = obtenerNumeroSemana(fecha);
+                    const año = fecha.getFullYear();
+                    const clave = `${año}-${numSemana}`;
+                    if (!semanasMap.has(clave)) semanasMap.set(clave, { año, semana: numSemana, fecha });
+                }
+            }
+            const semanas = Array.from(semanasMap.values());
+            semanas.sort((a, b) => {
+                if (a.año !== b.año) return b.año - a.año;
+                return b.semana - a.semana;
+            });
+            return semanas;
+        }
+
+        function calcularPorSemana(cedis, semanaKey) {
+            if (datosCache[`${cedis}_${semanaKey}`]) return datosCache[`${cedis}_${semanaKey}`];
+            
+            const semanaData = semanasDisponibles.find(s => `${s.año}-${s.semana}` === semanaKey);
+            if (!semanaData) return null;
+            
+            const inicioSemana = obtenerInicioSemana(semanaData.fecha);
+            const finSemana = obtenerFinSemana(semanaData.fecha);
+            
+            const registrosCedis = datosBD.filter(row => row[3] === cedis);
+            if (registrosCedis.length === 0) return null;
+            
+            registrosCedis.sort((a, b) => parseFecha(a[1], a[2]) - parseFecha(b[1], b[2]));
+            
+            let inventarioBase = null, fechaBase = null;
+            let movimientosLila = 0, movimientosCordoba = 0;
+            let inventarioFinal = null, fechaFinal = null;
+            let movimientosDetalle = [];
+            
+            for (const row of registrosCedis) {
+                const fecha = parseFecha(row[1], row[2]);
+                if (!fecha) continue;
+                
+                const tarea = row[5];
+                const cantidadLila = parseInt(row[7]) || 0;
+                const cantidadCordoba = parseInt(row[9]) || 0;
+                const rutaUnidad = row[6] || '';
+                
+                if (tarea === 'Registro de Inventario') {
+                    if (fecha <= finSemana && !inventarioBase) {
+                        inventarioBase = { lila: cantidadLila, cordoba: cantidadCordoba };
+                        fechaBase = fecha;
+                    }
+                    if (fecha >= inicioSemana && fecha <= finSemana) {
+                        inventarioFinal = { lila: cantidadLila, cordoba: cantidadCordoba };
+                        fechaFinal = fecha;
+                    }
+                } else if (fecha >= inicioSemana && fecha <= finSemana) {
+                    let tipoMov = '';
+                    if (tarea.includes('Envío')) {
+                        movimientosLila -= cantidadLila;
+                        movimientosCordoba -= cantidadCordoba;
+                        tipoMov = 'Envío';
+                    } else if (tarea.includes('Recepción')) {
+                        movimientosLila += cantidadLila;
+                        movimientosCordoba += cantidadCordoba;
+                        tipoMov = 'Recepción';
+                    }
+                    movimientosDetalle.push({
+                        fecha: row[1],
+                        hora: row[2],
+                        tipo: tipoMov,
+                        lila: cantidadLila,
+                        cordoba: cantidadCordoba,
+                        ruta: rutaUnidad
+                    });
+                }
+            }
+            
+            if (!inventarioBase) return null;
+            
+            const resultado = {
+                baseLila: inventarioBase.lila,
+                baseCordoba: inventarioBase.cordoba,
+                fechaBase: fechaBase ? formatearFechaISO(fechaBase.toISOString()) : null,
+                movimientosLila: movimientosLila,
+                movimientosCordoba: movimientosCordoba,
+                movimientosDetalle: movimientosDetalle,
+                actualLila: inventarioBase.lila + movimientosLila,
+                actualCordoba: inventarioBase.cordoba + movimientosCordoba,
+                finalLila: inventarioFinal ? inventarioFinal.lila : null,
+                finalCordoba: inventarioFinal ? inventarioFinal.cordoba : null,
+                fechaFinal: inventarioFinal ? formatearFechaISO(fechaFinal.toISOString()) : null,
+                diferenciaLila: inventarioFinal ? (inventarioFinal.lila - (inventarioBase.lila + movimientosLila)) : null,
+                diferenciaCordoba: inventarioFinal ? (inventarioFinal.cordoba - (inventarioBase.cordoba + movimientosCordoba)) : null
+            };
+            datosCache[`${cedis}_${semanaKey}`] = resultado;
+            return resultado;
+        }
+
+        function extraerDestino(destinoCompleto) {
+            if (!destinoCompleto) return '';
+            if (destinoCompleto.includes(' - ')) return destinoCompleto.split(' - ')[1];
+            return destinoCompleto;
+        }
+
+        function obtenerEnviosPorCedis(cedis) {
+            return enviosPendientes.filter(envio => {
+                if (envio.tarea === 'Envío de charolas a CEDIS FORANEOS') return extraerDestino(envio.destino) === cedis;
+                if (envio.tarea === 'Envío de charolas a COA') return envio.destino === cedis;
+                return false;
+            });
+        }
+
+        async function cargarDatos() {
+            showLoader();
+            try {
+                const resBD = await fetch(`${APPS_SCRIPT_URL}?action=getAllData`);
+                const dataBD = await resBD.json();
+                if (dataBD.success) datosBD = dataBD.data || [];
+                
+                const resEnv = await fetch(`${APPS_SCRIPT_URL}?action=getEnviosPendientesGeneral`);
+                const dataEnv = await resEnv.json();
+                if (dataEnv.success) enviosPendientes = dataEnv.envios || [];
+                
+                semanasDisponibles = extraerSemanas();
+                const semanaSelect = document.getElementById('semanaSelect');
+                semanaSelect.innerHTML = '';
+                for (const sem of semanasDisponibles) {
+                    const option = document.createElement('option');
+                    option.value = `${sem.año}-${sem.semana}`;
+                    option.textContent = `Semana ${sem.semana} (${formatearRangoSemana(sem.fecha)})`;
+                    semanaSelect.appendChild(option);
+                }
+                if (semanasDisponibles.length) {
+                    semanaActual = `${semanasDisponibles[0].año}-${semanasDisponibles[0].semana}`;
+                    semanaSelect.value = semanaActual;
+                    actualizarDashboard();
+                }
+            } catch(e) { console.error(e); }
+            finally { hideLoader(); }
+        }
+
+        function cambiarSemana() {
+            semanaActual = document.getElementById('semanaSelect').value;
+            actualizarDashboard();
+        }
+
+        function mostrarModal(cedis, semanaNum, data, envios) {
+            showLoader();
+            
+            setTimeout(() => {
+                const modal = document.getElementById('modal');
+                document.getElementById('modalTitle').textContent = `${cedis} - Semana ${semanaNum}`;
+                
+                const baseFecha = data && data.fechaBase ? data.fechaBase : 'Sin registro';
+                const baseLila = data ? data.baseLila : 0;
+                const baseCordoba = data ? data.baseCordoba : 0;
+                const actualLila = data ? data.actualLila : 0;
+                const actualCordoba = data ? data.actualCordoba : 0;
+                const movLila = data ? data.movimientosLila : 0;
+                const movCordoba = data ? data.movimientosCordoba : 0;
+                
+                let nuevoHtml = '';
+                if (data && data.finalLila !== null) {
+                    nuevoHtml = `
+                        <div class="detail-card">
+                            <div class="detail-title">🆕 NUEVO INVENTARIO REGISTRADO</div>
+                            <div class="detail-row">
+                                <span class="detail-row-label">Fecha</span>
+                                <span class="detail-row-value">${data.fechaFinal || 'N/A'}</span>
+                            </div>
+                            <div class="detail-grid">
+                                <div class="detail-item"><span class="detail-label">Lila</span><span class="detail-value lila">${data.finalLila.toLocaleString()}</span></div>
+                                <div class="detail-item"><span class="detail-label">Córdoba</span><span class="detail-value cordoba">${data.finalCordoba.toLocaleString()}</span></div>
+                                <div class="detail-item"><span class="detail-label">Diferencia Lila</span><span class="detail-value ${data.diferenciaLila >= 0 ? 'positive' : 'negative'}">${data.diferenciaLila >= 0 ? '+' : ''}${data.diferenciaLila.toLocaleString()}</span></div>
+                                <div class="detail-item"><span class="detail-label">Diferencia Córdoba</span><span class="detail-value ${data.diferenciaCordoba >= 0 ? 'positive' : 'negative'}">${data.diferenciaCordoba >= 0 ? '+' : ''}${data.diferenciaCordoba.toLocaleString()}</span></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                let movimientosHtml = '<div class="detail-title">📋 MOVIMIENTOS DE LA SEMANA</div><div class="movimiento-list">';
+                if (data && data.movimientosDetalle && data.movimientosDetalle.length > 0) {
+                    data.movimientosDetalle.forEach(m => {
+                        const fechaFormateada = formatearFechaMovimiento(m.fecha, m.hora);
+                        movimientosHtml += `
+                            <div class="movimiento-item">
+                                <span>${fechaFormateada}</span>
+                                <span class="movimiento-tipo ${m.tipo === 'Envío' ? 'envio' : 'recepcion'}">${m.tipo}</span>
+                                <span style="color:#6B46C1;">${m.lila}</span>
+                                <span style="color:#DD6B20;">${m.cordoba}</span>
+                                <span>${m.ruta}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    movimientosHtml += '<div class="movimiento-item" style="justify-content:center;">Sin movimientos esta semana</div>';
+                }
+                movimientosHtml += '</div>';
+                
+                let rutasHtml = '<div class="detail-title">🚛 ENVÍOS EN RUTA</div><div class="ruta-list">';
+                if (envios && envios.length > 0) {
+                    envios.forEach(e => {
+                        rutasHtml += `
+                            <div class="ruta-item">
+                                <span><strong>${e.id}</strong></span>
+                                <span>📅 ${formatearFechaSolo(e.fecha)}</span>
+                                <span>🚛 ${e.rutaUnidad || 'Sin ruta'}</span>
+                                <span style="color:#6B46C1;">${e.cantidadLila}</span>
+                                <span style="color:#DD6B20;">${e.cantidadCordoba}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    rutasHtml += '<div class="ruta-item" style="justify-content:center;">No hay envíos pendientes</div>';
+                }
+                rutasHtml += '</div>';
+                
+                document.getElementById('modalBody').innerHTML = `
+                    <div class="detail-card">
+                        <div class="detail-title">📆 INVENTARIO BASE</div>
+                        <div class="detail-row">
+                            <span class="detail-row-label">Fecha</span>
+                            <span class="detail-row-value">${baseFecha}</span>
+                        </div>
+                        <div class="detail-grid">
+                            <div class="detail-item"><span class="detail-label">Lila</span><span class="detail-value lila">${baseLila.toLocaleString()}</span></div>
+                            <div class="detail-item"><span class="detail-label">Córdoba</span><span class="detail-value cordoba">${baseCordoba.toLocaleString()}</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-title">📈 INVENTARIO ACTUAL</div>
+                        <div class="detail-grid">
+                            <div class="detail-item"><span class="detail-label">Lila</span><span class="detail-value lila">${actualLila.toLocaleString()}</span></div>
+                            <div class="detail-item"><span class="detail-label">Córdoba</span><span class="detail-value cordoba">${actualCordoba.toLocaleString()}</span></div>
+                            <div class="detail-item"><span class="detail-label">Movimientos Lila</span><span class="detail-value ${movLila >= 0 ? 'positive' : 'negative'}">${movLila >= 0 ? '+' : ''}${movLila.toLocaleString()}</span></div>
+                            <div class="detail-item"><span class="detail-label">Movimientos Córdoba</span><span class="detail-value ${movCordoba >= 0 ? 'positive' : 'negative'}">${movCordoba >= 0 ? '+' : ''}${movCordoba.toLocaleString()}</span></div>
+                        </div>
+                    </div>
+                    
+                    ${nuevoHtml}
+                    
+                    <div class="detail-card">
+                        ${movimientosHtml}
+                    </div>
+                    
+                    <div class="detail-card">
+                        ${rutasHtml}
+                    </div>
+                `;
+                
+                modal.classList.add('active');
+                hideLoader();
+            }, 100);
+        }
+
+        function cerrarModal() { 
+            document.getElementById('modal').classList.remove('active'); 
+        }
+
+        function actualizarDashboard() {
+            const semanaData = semanasDisponibles.find(s => `${s.año}-${s.semana}` === semanaActual);
+            if (!semanaData) return;
+            
+            document.getElementById('weekInfo').innerHTML = `📆 Semana ${semanaData.semana} | ${formatearRangoSemana(semanaData.fecha)}`;
+            
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            
+            for (const cedis of CEDIS_LIST) {
+                const data = calcularPorSemana(cedis, semanaActual);
+                const envios = obtenerEnviosPorCedis(cedis);
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                const baseFecha = data && data.fechaBase ? data.fechaBase : 'Sin base';
+                const actualLila = data ? data.actualLila : 0;
+                const actualCordoba = data ? data.actualCordoba : 0;
+                const movLila = data ? data.movimientosLila : 0;
+                const movCordoba = data ? data.movimientosCordoba : 0;
+                const difLila = data && data.diferenciaLila !== null ? data.diferenciaLila : null;
+                const difCordoba = data && data.diferenciaCordoba !== null ? data.diferenciaCordoba : null;
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h2>${cedis}</h2>
+                        <div class="base-date">Base: ${baseFecha}</div>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat-main">
+                            <span class="stat-main-label">Inventario actual</span>
+                            <div class="stat-main-value">
+                                <div class="lila">🟣 ${actualLila.toLocaleString()}</div>
+                                <div class="cordoba">🟤 ${actualCordoba.toLocaleString()}</div>
+                            </div>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Movimientos</span>
+                            <div class="stat-numbers">
+                                <span class="stat-number lila">${movLila >= 0 ? '+' : ''}${movLila.toLocaleString()}</span>
+                                <span class="stat-number cordoba">${movCordoba >= 0 ? '+' : ''}${movCordoba.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        ${difLila !== null ? `
+                            <div class="stat-row">
+                                <span class="stat-label">Diferencia</span>
+                                <div class="stat-numbers">
+                                    <span class="stat-number ${difLila >= 0 ? 'positive' : 'negative'}">${difLila >= 0 ? '+' : ''}${difLila.toLocaleString()}</span>
+                                    <span class="stat-number ${difCordoba >= 0 ? 'positive' : 'negative'}">${difCordoba >= 0 ? '+' : ''}${difCordoba.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        ` : ''}
+                        <div class="envios-ruta">
+                            <div class="envios-ruta-title">🚛 Envíos en ruta <span class="ruta-count">${envios.length}</span></div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-detalle" data-cedis="${cedis}" data-semana="${semanaData.semana}">
+                            🔍 Ver detalle
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+            
+            document.querySelectorAll('.btn-detalle').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const cedis = this.getAttribute('data-cedis');
+                    const semanaNum = parseInt(this.getAttribute('data-semana'));
+                    const data = calcularPorSemana(cedis, semanaActual);
+                    const envios = obtenerEnviosPorCedis(cedis);
+                    mostrarModal(cedis, semanaNum, data, envios);
+                });
+            });
+        }
+
+        function exportarExcel() {
+            const semanaData = semanasDisponibles.find(s => `${s.año}-${s.semana}` === semanaActual);
+            if (!semanaData) return;
+            
+            showLoader();
+            setTimeout(() => {
+                let csv = "REPORTE EJECUTIVO DE INVENTARIO SEMANAL\n";
+                csv += "==================================================\n";
+                csv += `Semana ${semanaData.semana} | ${formatearRangoSemana(semanaData.fecha)}\n`;
+                csv += `Fecha de exportación: ${new Date().toLocaleString('es-MX')}\n`;
+                csv += "==================================================\n\n";
+                csv += "CEDIS,Fecha Base,Base Lila,Base Córdoba,Movimientos Lila,Movimientos Córdoba,Actual Lila,Actual Córdoba,Fecha Nuevo,Nuevo Lila,Nuevo Córdoba,Diferencia Lila,Diferencia Córdoba,Envíos en Ruta\n";
+                
+                for (const cedis of CEDIS_LIST) {
+                    const data = calcularPorSemana(cedis, semanaActual);
+                    const envios = obtenerEnviosPorCedis(cedis);
+                    const enviosText = envios.map(e => e.id).join('; ');
+                    
+                    if (data) {
+                        const difLila = data.diferenciaLila !== null ? (data.diferenciaLila >= 0 ? `+${data.diferenciaLila}` : `${data.diferenciaLila}`) : 'N/A';
+                        const difCordoba = data.diferenciaCordoba !== null ? (data.diferenciaCordoba >= 0 ? `+${data.diferenciaCordoba}` : `${data.diferenciaCordoba}`) : 'N/A';
+                        
+                        csv += `${cedis},${data.fechaBase || 'N/A'},${data.baseLila},${data.baseCordoba},${data.movimientosLila},${data.movimientosCordoba},${data.actualLila},${data.actualCordoba},${data.fechaFinal || 'N/A'},${data.finalLila !== null ? data.finalLila : 'N/A'},${data.finalCordoba !== null ? data.finalCordoba : 'N/A'},${difLila},${difCordoba},"${enviosText}"\n`;
+                    } else {
+                        csv += `${cedis},N/A,0,0,0,0,0,0,N/A,N/A,N/A,N/A,N/A,"${enviosText}"\n`;
+                    }
+                }
+                
+                const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `Reporte_Semana_${semanaData.semana}_${semanaData.año}.csv`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                hideLoader();
+            }, 100);
+        }
+
+        function abrirIndex() { 
+            window.location.href = 'index.html'; 
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') cerrarModal();
+        });
+
+        cargarDatos();
+    </script>
+</body>
+</html>
