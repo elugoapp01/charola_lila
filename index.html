@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Sistema de Control de Charolas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #F4F6F9; color: #1A1F36; }
+        .corporate-header { background: linear-gradient(135deg, #0B2B4E 0%, #1A4A6F 100%); color: white; padding: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .header-container { max-width: 800px; margin: 0 auto; padding: 0 30px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-area img { max-height: 55px; width: auto; }
+        .title-area { text-align: left; }
+        .title-area h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: 5px; }
+        .title-area p { color: rgba(255,255,255,0.85); font-size: 0.85rem; }
+        .btn-dashboard { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 10px; color: white; cursor: pointer; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        .btn-dashboard:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+        .main-container { max-width: 800px; margin: 40px auto; padding: 0 30px; }
+        .form-single { background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 35px; }
+        .form-field { margin-bottom: 25px; }
+        .form-field label { display: block; margin-bottom: 8px; font-weight: 600; color: #2C3E50; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-field label .required { color: #E53E3E; margin-left: 3px; }
+        select, input { width: 100%; padding: 14px 16px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-size: 0.95rem; font-family: inherit; background: white; }
+        select { text-transform: uppercase; }
+        input[type="text"] { text-transform: uppercase; }
+        input[type="number"] { text-transform: none; }
+        select:focus, input:focus { outline: none; border-color: #1A4A6F; box-shadow: 0 0 0 3px rgba(26,74,111,0.1); }
+        .envios-pendientes { background: #F8F9FC; border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid #E2E8F0; max-height: 300px; overflow-y: auto; }
+        .envio-item { background: white; padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; border-left: 3px solid #1A4A6F; cursor: pointer; transition: all 0.2s; }
+        .envio-item:hover { background: #F7FAFC; transform: translateX(3px); }
+        .envio-item.selected { background: #C6F6D5; border-left: 4px solid #276749; }
+        .envio-id { font-weight: bold; color: #1A4A6F; font-size: 0.8rem; margin-bottom: 5px; }
+        .envio-info { font-size: 0.75rem; color: #4A5568; display: inline-block; margin-right: 12px; }
+        .envio-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+        .quantity-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .btn-submit { background: linear-gradient(135deg, #0B2B4E 0%, #1A4A6F 100%); color: white; border: none; padding: 14px 40px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; text-transform: uppercase; transition: all 0.3s; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(11,43,78,0.3); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .loader-overlay.active { opacity: 1; visibility: visible; }
+        .loader-logo { margin-bottom: 40px; animation: pulseGlow 2s ease-in-out infinite; }
+        .loader-logo img { max-width: 120px; height: auto; }
+        @keyframes pulseGlow { 0%,100% { filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); } 50% { filter: drop-shadow(0 0 30px rgba(255,255,255,0.6)); } }
+        .loader-bars { display: flex; justify-content: center; gap: 12px; }
+        .loader-bars span { width: 10px; height: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 5px; animation: barBounce 1s ease-in-out infinite; }
+        .loader-bars span:nth-child(1) { animation-delay: 0s; }
+        .loader-bars span:nth-child(2) { animation-delay: 0.1s; }
+        .loader-bars span:nth-child(3) { animation-delay: 0.2s; }
+        .loader-bars span:nth-child(4) { animation-delay: 0.3s; }
+        .loader-bars span:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes barBounce { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(2); } }
+        .message { margin-top: 25px; padding: 15px; border-radius: 10px; text-align: center; display: none; }
+        .message.success { background: #C6F6D5; color: #22543D; display: block; }
+        .message.error { background: #FED7D7; color: #742A2A; display: block; }
+        .corporate-footer { background: #2D3748; color: #A0AEC0; text-align: center; padding: 20px; margin-top: 50px; font-size: 0.85rem; }
+        @media (max-width: 768px) {
+            .header-container { flex-direction: column; text-align: center; }
+            .title-area { text-align: center; }
+            .title-area h1 { font-size: 1.3rem; }
+            .form-single { padding: 25px; }
+            .quantity-row { grid-template-columns: 1fr; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loaderOverlay" class="loader-overlay">
+        <div class="loader-content">
+            <div class="loader-logo"><img src="Mesa de control.png" alt="Logo" id="loaderLogo"></div>
+            <div class="loader-bars"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+    </div>
+
+    <header class="corporate-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <img src="Mesa de control.png" alt="Logo" id="logo">
+                <div class="title-area">
+                    <h1>SISTEMA DE CONTROL DE CHAROLAS</h1>
+                    <p>Gestión de entradas y salidas</p>
+                </div>
+            </div>
+            <button class="btn-dashboard" onclick="irDashboard()">📊 IR AL DASHBOARD</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="form-single">
+            <form id="controlForm">
+                <div class="form-field">
+                    <label for="cedis">SELECCIONA CEDIS <span class="required">*</span></label>
+                    <select id="cedis" required>
+                        <option value="">SELECCIONE UN CEDIS</option>
+                        <option value="COA">COA</option>
+                        <option value="MONTERREY">MONTERREY</option>
+                        <option value="GUADALAJARA">GUADALAJARA</option>
+                        <option value="HERMOSILLO">HERMOSILLO</option>
+                        <option value="CANCUN">CANCUN</option>
+                    </select>
+                </div>
+
+                <div class="form-field" id="fieldTarea" style="display: none;">
+                    <label for="tarea">TAREA A REALIZAR <span class="required">*</span></label>
+                    <select id="tarea">
+                        <option value="">SELECCIONE UNA TAREA</option>
+                        <option value="1">1. ENVÍO DE CHAROLAS A CEDIS FORANEOS</option>
+                        <option value="2">2. RECEPCIÓN DE CHAROLAS EN CEDIS FORANEOS</option>
+                        <option value="3">3. ENVÍO DE CHAROLAS A COA</option>
+                        <option value="4">4. RECEPCIÓN DE CHAROLAS EN COA</option>
+                        <option value="5">5. REGISTRO DE INVENTARIO</option>
+                    </select>
+                </div>
+
+                <div id="fieldEnviosPendientes" style="display: none;">
+                    <div class="envios-pendientes">
+                        <h4>📦 SELECCIONE EL ENVÍO A RECIBIR:</h4>
+                        <div id="listaEnvios"></div>
+                    </div>
+                </div>
+
+                <div class="form-field" id="fieldRuta" style="display: none;">
+                    <label for="ruta">RUTA DE ENVÍO <span class="required">*</span></label>
+                    <input type="text" id="ruta" maxlength="100" placeholder="Ej: RUTA 45">
+                </div>
+
+                <div class="form-field" id="fieldUnidad" style="display: none;">
+                    <label for="unidad">UNIDAD DE TRANSPORTE <span class="required">*</span></label>
+                    <input type="text" id="unidad" maxlength="100" placeholder="Ej: UNIT-001">
+                </div>
+
+                <div id="fieldCantidades" style="display: none;">
+                    <div class="quantity-row">
+                        <div class="form-field">
+                            <label for="charolaLila">CHAROLA LILA <span class="required">*</span></label>
+                            <input type="number" id="charolaLila" min="0" value="0">
+                        </div>
+                        <div class="form-field">
+                            <label for="charolaCordoba">CHAROLA CÓRDOBA <span class="required">*</span></label>
+                            <input type="number" id="charolaCordoba" min="0" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="submitContainer" style="display: none;">
+                    <button type="submit" class="btn-submit">💾 GUARDAR REGISTRO</button>
+                </div>
+
+                <div id="message" class="message"></div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="corporate-footer"><p>SISTEMA DE CONTROL DE CHAROLAS | TODOS LOS DERECHOS RESERVADOS © E.LUGO 2026</p></footer>
+
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz32ynxfGn932tFpNw59Ots0iNSU9p9nlPnlDnUQ4rn8i8plBDh1Z8yH4aAwSAYWMNF5g/exec';
+        
+        let selectedEnvioId = null;
+
+        const cedisSelect = document.getElementById('cedis');
+        const tareaSelect = document.getElementById('tarea');
+        const fieldTarea = document.getElementById('fieldTarea');
+        const fieldEnviosPendientes = document.getElementById('fieldEnviosPendientes');
+        const fieldRuta = document.getElementById('fieldRuta');
+        const fieldUnidad = document.getElementById('fieldUnidad');
+        const fieldCantidades = document.getElementById('fieldCantidades');
+        const submitContainer = document.getElementById('submitContainer');
+        const rutaInput = document.getElementById('ruta');
+        const unidadInput = document.getElementById('unidad');
+        const listaEnviosDiv = document.getElementById('listaEnvios');
+        const form = document.getElementById('controlForm');
+        const messageDiv = document.getElementById('message');
+        const loaderOverlay = document.getElementById('loaderOverlay');
+        const charolaLila = document.getElementById('charolaLila');
+        const charolaCordoba = document.getElementById('charolaCordoba');
+
+        function irDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        charolaLila.addEventListener('focus', () => { if (charolaLila.value === '0') charolaLila.select(); });
+        charolaCordoba.addEventListener('focus', () => { if (charolaCordoba.value === '0') charolaCordoba.select(); });
+
+        function formatearFechaSolo(fechaStr) {
+            if (!fechaStr) return 'Sin fecha';
+            if (fechaStr.match(/\d{2}-\w{3}-\d{2}/)) {
+                const partes = fechaStr.split(' ');
+                return partes[0];
+            }
+            try {
+                const fecha = new Date(fechaStr);
+                if (isNaN(fecha.getTime()) || fecha.getFullYear() < 2000) return fechaStr;
+                const dias = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                const dia = fecha.getDate().toString().padStart(2, '0');
+                const mes = dias[fecha.getMonth()];
+                const año = fecha.getFullYear().toString().slice(-2);
+                return `${dia}-${mes}-${año}`;
+            } catch(e) {
+                return fechaStr;
+            }
+        }
+
+        function extraerDestino(destinoCompleto) {
+            if (!destinoCompleto) return '';
+            if (destinoCompleto.includes(' - ')) {
+                const partes = destinoCompleto.split(' - ');
+                return partes[1];
+            }
+            return destinoCompleto;
+        }
+
+        function convertirAMayusculas(e) {
+            if (e.target.value && e.target.type === 'text') e.target.value = e.target.value.toUpperCase();
+        }
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            input.addEventListener('input', convertirAMayusculas);
+            input.addEventListener('blur', convertirAMayusculas);
+        });
+
+        function showLoader() { loaderOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideLoader() { loaderOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+        
+        function showMessage(text, type) {
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function ocultarTodosLosCampos() {
+            fieldTarea.style.display = 'none';
+            fieldEnviosPendientes.style.display = 'none';
+            fieldRuta.style.display = 'none';
+            fieldUnidad.style.display = 'none';
+            fieldCantidades.style.display = 'none';
+            submitContainer.style.display = 'none';
+            tareaSelect.value = '';
+            rutaInput.value = '';
+            unidadInput.value = '';
+            charolaLila.value = '0';
+            charolaCordoba.value = '0';
+            listaEnviosDiv.innerHTML = '';
+            selectedEnvioId = null;
+        }
+
+        function actualizarTareas() {
+            const cedis = cedisSelect.value;
+            if (!cedis) { ocultarTodosLosCampos(); return; }
+            fieldTarea.style.display = 'block';
+            fieldEnviosPendientes.style.display = 'none';
+            fieldRuta.style.display = 'none';
+            fieldUnidad.style.display = 'none';
+            fieldCantidades.style.display = 'none';
+            submitContainer.style.display = 'none';
+            selectedEnvioId = null;
+        }
+
+        async function cargarEnviosPendientes(cedisOrigen, tipo, cedisFiltro) {
+            showLoader();
+            try {
+                const url = `${APPS_SCRIPT_URL}?action=getEnviosPendientes&cedisOrigen=${cedisOrigen}&tipo=${tipo}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log('Datos recibidos:', data);
+                
+                if (data.success && data.envios && data.envios.length > 0) {
+                    const enviosFiltrados = data.envios.filter(envio => {
+                        const destinoLimpio = extraerDestino(envio.destino);
+                        console.log(`Envío: ${envio.id}, Destino original: ${envio.destino}, Destino limpio: ${destinoLimpio}, Filtro: ${cedisFiltro}`);
+                        return destinoLimpio === cedisFiltro;
+                    });
+                    
+                    if (enviosFiltrados.length > 0) {
+                        listaEnviosDiv.innerHTML = '';
+                        enviosFiltrados.forEach(envio => {
+                            const div = document.createElement('div');
+                            div.className = 'envio-item';
+                            div.setAttribute('data-id', envio.id);
+                            div.innerHTML = `
+                                <div class="envio-id">📄 ${envio.id}</div>
+                                <div class="envio-row">
+                                    <span class="envio-info">📅 ${formatearFechaSolo(envio.fecha)}</span>
+                                    <span class="envio-info">🚛 ${envio.rutaUnidad || 'No registrado'}</span>
+                                    <span class="envio-info">🟣 ${envio.cantidadLila}</span>
+                                    <span class="envio-info">🟤 ${envio.cantidadCordoba}</span>
+                                </div>
+                            `;
+                            div.onclick = (function(id) {
+                                return function() {
+                                    document.querySelectorAll('.envio-item').forEach(item => item.classList.remove('selected'));
+                                    this.classList.add('selected');
+                                    selectedEnvioId = id;
+                                };
+                            })(envio.id);
+                            listaEnviosDiv.appendChild(div);
+                        });
+                    } else {
+                        listaEnviosDiv.innerHTML = `<p style="color: #E53E3E; padding: 8px;">⚠️ No hay envíos pendientes para ${cedisFiltro}</p>`;
+                        selectedEnvioId = null;
+                    }
+                } else {
+                    listaEnviosDiv.innerHTML = '<p style="color: #E53E3E; padding: 8px;">⚠️ No hay envíos pendientes</p>';
+                    selectedEnvioId = null;
+                }
+            } catch(error) {
+                console.error(error);
+                listaEnviosDiv.innerHTML = '<p style="color: #E53E3E;">❌ Error al cargar envíos</p>';
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function actualizarCamposPorTarea() {
+            const cedis = cedisSelect.value;
+            const tarea = tareaSelect.value;
+            
+            if (!cedis || !tarea) {
+                fieldEnviosPendientes.style.display = 'none';
+                fieldRuta.style.display = 'none';
+                fieldUnidad.style.display = 'none';
+                fieldCantidades.style.display = 'none';
+                submitContainer.style.display = 'none';
+                return;
+            }
+            
+            fieldCantidades.style.display = 'block';
+            selectedEnvioId = null;
+            listaEnviosDiv.innerHTML = '';
+            
+            if (tarea === '1') {
+                fieldRuta.style.display = 'block';
+                fieldUnidad.style.display = 'none';
+                fieldEnviosPendientes.style.display = 'none';
+                submitContainer.style.display = 'block';
+            } else if (tarea === '2') {
+                fieldEnviosPendientes.style.display = 'block';
+                fieldRuta.style.display = 'none';
+                fieldUnidad.style.display = 'none';
+                submitContainer.style.display = 'block';
+                cargarEnviosPendientes('COA', 'recepcionForaneos', cedis);
+            } else if (tarea === '3') {
+                fieldUnidad.style.display = 'block';
+                fieldRuta.style.display = 'none';
+                fieldEnviosPendientes.style.display = 'none';
+                submitContainer.style.display = 'block';
+            } else if (tarea === '4') {
+                fieldEnviosPendientes.style.display = 'block';
+                fieldRuta.style.display = 'none';
+                fieldUnidad.style.display = 'none';
+                submitContainer.style.display = 'block';
+                cargarEnviosPendientes(cedis, 'recepcionCOA', 'COA');
+            } else if (tarea === '5') {
+                fieldEnviosPendientes.style.display = 'none';
+                fieldRuta.style.display = 'none';
+                fieldUnidad.style.display = 'none';
+                submitContainer.style.display = 'block';
+            }
+        }
+
+        function validarCampos() {
+            const tarea = tareaSelect.value;
+            const lila = parseInt(charolaLila.value) || 0;
+            const cordoba = parseInt(charolaCordoba.value) || 0;
+            
+            if (lila === 0 && cordoba === 0) {
+                showMessage('⚠️ DEBE INGRESAR AL MENOS UNA CHAROLA', 'error');
+                return false;
+            }
+            
+            if (tarea === '1' && !rutaInput.value.trim()) { 
+                showMessage('⚠️ CAPTURE LA RUTA', 'error'); 
+                return false; 
+            }
+            if (tarea === '3' && !unidadInput.value.trim()) { 
+                showMessage('⚠️ CAPTURE LA UNIDAD', 'error'); 
+                return false; 
+            }
+            if ((tarea === '2' || tarea === '4') && !selectedEnvioId) { 
+                showMessage('⚠️ SELECCIONE UN ENVÍO', 'error'); 
+                return false; 
+            }
+            return true;
+        }
+
+        cedisSelect.addEventListener('change', actualizarTareas);
+        tareaSelect.addEventListener('change', actualizarCamposPorTarea);
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const tarea = tareaSelect.value;
+            const cedis = cedisSelect.value;
+            
+            if (!validarCampos()) return;
+            
+            const params = new URLSearchParams();
+            params.append('tarea', tarea);
+            
+            if (tarea === '1') {
+                params.append('cedis', 'COA');
+                params.append('cedisDestino', cedis);
+                params.append('rutaUnidad', rutaInput.value);
+                params.append('charolaLila', charolaLila.value);
+                params.append('charolaCordoba', charolaCordoba.value);
+            } else if (tarea === '2') {
+                params.append('cedis', cedis);
+                params.append('idRecibido', selectedEnvioId);
+                params.append('charolaLila', charolaLila.value);
+                params.append('charolaCordoba', charolaCordoba.value);
+            } else if (tarea === '3') {
+                params.append('cedis', cedis);
+                params.append('rutaUnidad', unidadInput.value);
+                params.append('charolaLila', charolaLila.value);
+                params.append('charolaCordoba', charolaCordoba.value);
+            } else if (tarea === '4') {
+                params.append('cedis', 'COA');
+                params.append('idRecibido', selectedEnvioId);
+                params.append('charolaLila', charolaLila.value);
+                params.append('charolaCordoba', charolaCordoba.value);
+            } else if (tarea === '5') {
+                params.append('cedis', cedis);
+                params.append('charolaLila', charolaLila.value);
+                params.append('charolaCordoba', charolaCordoba.value);
+            }
+            
+            showLoader();
+            const submitBtn = document.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('✅ REGISTRO GUARDADO', 'success');
+                    cedisSelect.value = '';
+                    ocultarTodosLosCampos();
+                } else {
+                    showMessage('❌ ERROR: ' + (result.error || 'No se pudo guardar'), 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showMessage('❌ ERROR: ' + error.message, 'error');
+            } finally {
+                hideLoader();
+                submitBtn.disabled = false;
+            }
+        });
+        
+        ocultarTodosLosCampos();
+    </script>
+</body>
+</html>
