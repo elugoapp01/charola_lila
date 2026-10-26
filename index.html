@@ -62,7 +62,6 @@
             .quantity-row { grid-template-columns: 1fr; gap: 20px; }
         }
 
-        /* MODALES GENERALES */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 10000; padding: 20px; }
         .modal-overlay.active { display: flex; }
         .modal-box { background: white; border-radius: 16px; padding: 30px; max-width: 520px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalIn 0.25s ease-out; max-height: 90vh; overflow-y: auto; }
@@ -90,7 +89,6 @@
         .badge-diff-pos { color: #22543D; font-weight: 700; }
         .badge-diff-neg { color: #742A2A; font-weight: 700; }
 
-        /* MODAL DE EVIDENCIA */
         .evidence-box { border-left: 4px solid #2B6CB0; max-width: 560px; padding-top: 0; }
         .evidence-header {
             background: linear-gradient(135deg, #0B2B4E 0%, #1A4A6F 100%);
@@ -192,7 +190,6 @@
                     <input type="text" id="ruta" maxlength="100" placeholder="Ej: CAJA-001">
                 </div>
 
-                <!-- ÁREA (solo COA + inventario) -->
                 <div class="form-field" id="fieldArea" style="display: none;">
                     <label for="area">ÁREA <span class="required">*</span></label>
                     <select id="area">
@@ -226,7 +223,6 @@
 
     <footer class="corporate-footer"><p>SISTEMA DE CONTROL DE CHAROLAS | TODOS LOS DERECHOS RESERVADOS © E.LUGO 2026</p></footer>
 
-    <!-- MODAL 1: Advertencia -->
     <div class="modal-overlay" id="modalWarning">
         <div class="modal-box warning-box">
             <h3><span class="modal-icon">⚠️</span> LAS CANTIDADES NO COINCIDEN</h3>
@@ -240,7 +236,6 @@
         </div>
     </div>
 
-    <!-- MODAL 2: Confirmación -->
     <div class="modal-overlay" id="modalConfirm">
         <div class="modal-box confirm-box">
             <h3><span class="modal-icon">✅</span> CONFIRMAR REGISTRO</h3>
@@ -254,7 +249,6 @@
         </div>
     </div>
 
-    <!-- MODAL EVIDENCIA: ENVÍO -->
     <div class="modal-overlay" id="modalEvidenciaEnvio">
         <div class="modal-box evidence-box">
             <div class="evidence-header">
@@ -283,7 +277,6 @@
         </div>
     </div>
 
-    <!-- MODAL EVIDENCIA: INVENTARIO -->
     <div class="modal-overlay" id="modalEvidenciaInventario">
         <div class="modal-box evidence-box">
             <div class="evidence-header">
@@ -359,9 +352,7 @@
                 const mes = dias[fecha.getMonth()];
                 const año = fecha.getFullYear().toString().slice(-2);
                 return `${dia}-${mes}-${año}`;
-            } catch(e) {
-                return fechaStr;
-            }
+            } catch(e) { return fechaStr; }
         }
 
         function convertirAMayusculas(e) {
@@ -481,6 +472,21 @@
                             })(envio);
                             listaEnviosDiv.appendChild(div);
                         });
+                        
+                        // Si venía un envío preseleccionado desde el dashboard, seleccionarlo
+                        if (envioPreSeleccionado) {
+                            const items = listaEnviosDiv.querySelectorAll('.envio-item');
+                            items.forEach(item => {
+                                if (item.getAttribute('data-id') === envioPreSeleccionado) {
+                                    item.classList.add('selected');
+                                    const env = enviosFiltrados.find(e => e.id === envioPreSeleccionado);
+                                    if (env) {
+                                        selectedEnvioId = env.id;
+                                        envioSeleccionado = env;
+                                    }
+                                }
+                            });
+                        }
                     } else {
                         listaEnviosDiv.innerHTML = `<p style="color: #E53E3E; padding: 8px;">⚠️ No hay envíos pendientes hacia ${miCedis}</p>`;
                     }
@@ -564,7 +570,6 @@
             return true;
         }
 
-        // ===== MODALES RECEPCIÓN =====
         function abrirModalWarning(lilaRec, cordobaRec) {
             const lilaEnv = parseInt(envioSeleccionado.cantidadLila)||0;
             const cordobaEnv = parseInt(envioSeleccionado.cantidadCordoba)||0;
@@ -684,7 +689,6 @@
             return { fecha: fechaTxt, hora: horaTxt };
         }
 
-        // ===== MODAL EVIDENCIA: ENVÍO =====
         function abrirEvidenciaEnvio() {
             const cedis = cedisSelect.value;
             const destino = cedisDestinoSelect.value;
@@ -751,7 +755,6 @@
             }
         }
 
-        // ===== MODAL EVIDENCIA: INVENTARIO =====
         function abrirEvidenciaInventario() {
             const cedis = cedisSelect.value;
             const lila = parseInt(charolaLila.value) || 0;
@@ -820,7 +823,6 @@
             }
         }
 
-        // ===== EVENTOS =====
         cedisSelect.addEventListener('change', actualizarTareas);
         tareaSelect.addEventListener('change', actualizarCamposPorTarea);
         
@@ -859,6 +861,43 @@
         });
         
         ocultarTodosLosCampos();
+
+        // ============================================================
+        // PRELLENADO DESDE EL DASHBOARD (parámetros en la URL)
+        // ============================================================
+        let envioPreSeleccionado = null;
+        
+        function prellenarDesdeURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const cedisParam = urlParams.get('cedis');
+            const tareaParam = urlParams.get('tarea');
+            const envioParam = urlParams.get('envio');
+            
+            if (!cedisParam || !tareaParam) return;
+            
+            // 1) Seleccionar CEDIS
+            cedisSelect.value = cedisParam;
+            actualizarTareas();
+            
+            // 2) Seleccionar tarea
+            tareaSelect.value = tareaParam;
+            envioPreSeleccionado = envioParam || null;
+            
+            // 3) Ejecutar la lógica de tarea (carga los envíos pendientes)
+            actualizarCamposPorTarea();
+            
+            // 4) Los inputs quedan en 0 (vacíos para que el usuario capture lo que llegó)
+            charolaLila.value = '0';
+            charolaCordoba.value = '0';
+            
+            // 5) Limpiar la URL para que no quede visible el prellenado
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+        
+        // Ejecutar al cargar
+        window.addEventListener('load', prellenarDesdeURL);
     </script>
 </body>
 </html>
