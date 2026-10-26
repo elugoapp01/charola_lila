@@ -21,7 +21,7 @@
         ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #0B2B4E, #2563EB); }
         
         .modal-body { max-height: calc(85vh - 120px); overflow-y: auto; }
-        .movimiento-list, .ruta-list { overflow: visible; max-height: none; }
+        .movimiento-list { overflow: visible; max-height: none; }
         
         .dashboard-header { 
             background: linear-gradient(135deg, #0B2B4E 0%, #1A4A6F 100%); 
@@ -107,6 +107,15 @@
             min-height: 0;
             align-content: start;
         }
+        
+        /* Columna del CEDIS: tarjeta principal + tarjetas de envío debajo */
+        .cedis-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+        }
+        
         .card { 
             background: white; 
             border-radius: 16px; 
@@ -117,7 +126,6 @@
             position: relative; 
             display: flex;
             flex-direction: column;
-            height: 100%;
             min-height: 200px;
         }
         .card:hover { transform: translateY(-4px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15); }
@@ -257,6 +265,113 @@
         }
         .btn-detalle:hover { background: #E2E8F0; color: #0B2B4E; }
         
+        /* ===== TARJETAS DE ENVÍO EN TRÁNSITO (independientes, debajo de la tarjeta principal) ===== */
+        .envio-card {
+            background: white;
+            border-radius: 12px;
+            padding: 10px 12px;
+            border-left: 4px solid #2B6CB0;
+            border-top: 1px solid #E2E8F0;
+            border-right: 1px solid #E2E8F0;
+            border-bottom: 1px solid #E2E8F0;
+            box-shadow: 0 2px 8px rgba(43,108,176,0.08);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .envio-card:hover {
+            background: #F7FAFC;
+            transform: translateX(3px);
+            box-shadow: 0 4px 12px rgba(43,108,176,0.18);
+        }
+        .envio-card-label {
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: #2B6CB0;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .envio-card-label .pulse-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #2B6CB0;
+            border-radius: 50%;
+            animation: pulseDot 1.5s ease-in-out infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.3); }
+        }
+        .envio-card-id {
+            font-weight: 700;
+            color: #1A4A6F;
+            font-size: 0.72rem;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+        }
+        .envio-card-id .arrow {
+            color: #2B6CB0;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .envio-card-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 10px;
+            margin-bottom: 6px;
+        }
+        .envio-card-info .info-item {
+            font-size: 0.6rem;
+            color: #4A5568;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .envio-card-cantidades {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 6px;
+            border-top: 1px dashed #E2E8F0;
+        }
+        .envio-card-cantidades .cant {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .envio-card-cantidades .cant .tag {
+            font-size: 0.48rem;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .envio-card-cantidades .cant.lila { color: #6B46C1; }
+        .envio-card-cantidades .cant.lila .tag { background: #F3E8FF; color: #6B46C1; }
+        .envio-card-cantidades .cant.cordoba { color: #00838F; }
+        .envio-card-cantidades .cant.cordoba .tag { background: #E0F7FA; color: #00838F; }
+        .envio-card-cantidades .total-badge {
+            margin-left: auto;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #1A4A6F;
+            background: #EBF8FF;
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
         .modal.active { display: flex; }
         .modal-content { background: white; border-radius: 24px; max-width: 700px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
@@ -283,9 +398,9 @@
         .detail-value.positive { color: #276749; }
         .detail-value.negative { color: #C53030; }
         
-        .movimiento-list, .ruta-list { background: white; border-radius: 12px; overflow: visible; border: 1px solid #EDF2F7; margin-top: 8px; }
-        .movimiento-item, .ruta-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #EDF2F7; font-size: 0.6rem; flex-wrap: wrap; gap: 6px; }
-        .movimiento-item:last-child, .ruta-item:last-child { border-bottom: none; }
+        .movimiento-list { background: white; border-radius: 12px; overflow: visible; border: 1px solid #EDF2F7; margin-top: 8px; }
+        .movimiento-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #EDF2F7; font-size: 0.6rem; flex-wrap: wrap; gap: 6px; }
+        .movimiento-item:last-child { border-bottom: none; }
         .movimiento-tipo { font-weight: 600; padding: 2px 6px; border-radius: 20px; font-size: 0.5rem; }
         .movimiento-tipo.envio { background: #FEE2E2; color: #DC2626; }
         .movimiento-tipo.recepcion { background: #DCFCE7; color: #16A34A; }
@@ -308,7 +423,7 @@
         .val-num.lila { color: #6B46C1; }
         .val-num.cordoba { color: #00838F; }
         
-        /* ===== SECCIÓN DE CONCILIACIÓN GENERAL ===== */
+        /* Conciliación general */
         .conciliacion-card {
             background: white;
             border-radius: 16px;
@@ -465,7 +580,7 @@
             .detail-item { padding: 4px 8px; }
             .detail-label { font-size: 0.55rem; }
             .detail-value { font-size: 0.65rem; }
-            .movimiento-item, .ruta-item { font-size: 0.55rem; padding: 4px 8px; }
+            .movimiento-item { font-size: 0.55rem; padding: 4px 8px; }
             
             .conciliacion-card { padding: 10px; }
             .conciliacion-row { padding: 6px 8px; }
@@ -686,18 +801,13 @@
             return null;
         }
 
-        // ============================================================
-        // CONCILIACIÓN GENERAL (histórico, sin importar la semana)
-        // ============================================================
         function calcularConciliacionGeneral(cedis) {
             const registrosCedis = datosBD
                 .filter(row => row[3] === cedis)
                 .map(row => ({ row, fecha: parseFecha(row[1], row[2]) }))
                 .filter(x => x.fecha);
             
-            if (registrosCedis.length === 0) {
-                return null;
-            }
+            if (registrosCedis.length === 0) return null;
             
             registrosCedis.sort((a, b) => a.fecha - b.fecha);
             
@@ -802,9 +912,7 @@
                 }
             }
             
-            if (!hayInicial || !hayFinal) {
-                return null;
-            }
+            if (!hayInicial || !hayFinal) return null;
             
             const calcLila = invInicialLila + entradasLila - salidasLila;
             const calcCordoba = invInicialCordoba + entradasCordoba - salidasCordoba;
@@ -825,18 +933,13 @@
             if (datosCache[`${cedis}_${semanaKey}`]) return datosCache[`${cedis}_${semanaKey}`];
             
             const semanaData = semanasDisponibles.find(s => `${s.año}-${s.semana}` === semanaKey);
-            if (!semanaData) {
-                return datosVacios();
-            }
+            if (!semanaData) return datosVacios();
             
             const inicioSemana = obtenerInicioSemana(semanaData.fecha);
             const finSemana = obtenerFinSemana(semanaData.fecha);
             
             const registrosCedis = datosBD.filter(row => row[3] === cedis);
-            
-            if (registrosCedis.length === 0) {
-                return datosVacios();
-            }
+            if (registrosCedis.length === 0) return datosVacios();
             
             registrosCedis.sort((a, b) => parseFecha(a[1], a[2]) - parseFecha(b[1], b[2]));
             
@@ -914,14 +1017,8 @@
                 const fechaBaseFinal = [fechaEnsBase, fechaAlmBase].filter(Boolean).sort((a,b)=>b-a)[0] || null;
                 const fechaFinalFinal = [fechaEnsFinal, fechaAlmFinal].filter(Boolean).sort((a,b)=>b-a)[0] || null;
                 
-                if (hayBase) {
-                    inventarioBase = { lila: baseL, cordoba: baseC };
-                    fechaBase = fechaBaseFinal;
-                }
-                if (hayFinal) {
-                    inventarioFinal = { lila: finalL, cordoba: finalC };
-                    fechaFinal = fechaFinalFinal;
-                }
+                if (hayBase) { inventarioBase = { lila: baseL, cordoba: baseC }; fechaBase = fechaBaseFinal; }
+                if (hayFinal) { inventarioFinal = { lila: finalL, cordoba: finalC }; fechaFinal = fechaFinalFinal; }
             } else {
                 for (const row of registrosCedis) {
                     const fecha = parseFecha(row[1], row[2]);
@@ -955,21 +1052,15 @@
                 }
             }
             
-            if (!inventarioBase) {
-                return datosVacios();
-            }
+            if (!inventarioBase) return datosVacios();
             
             const resultado = {
                 baseLila: inventarioBase.lila,
                 baseCordoba: inventarioBase.cordoba,
                 fechaBase: fechaBase ? formatearFechaISO(fechaBase.toISOString()) : null,
-                movimientosLila: movimientosLila,
-                movimientosCordoba: movimientosCordoba,
-                movimientosDetalle: movimientosDetalle,
-                entradasLila: entradasLila,
-                entradasCordoba: entradasCordoba,
-                salidasLila: salidasLila,
-                salidasCordoba: salidasCordoba,
+                movimientosLila, movimientosCordoba, movimientosDetalle,
+                entradasLila, entradasCordoba,
+                salidasLila, salidasCordoba,
                 actualLila: inventarioBase.lila + movimientosLila,
                 actualCordoba: inventarioBase.cordoba + movimientosCordoba,
                 finalLila: inventarioFinal ? inventarioFinal.lila : null,
@@ -1063,7 +1154,13 @@
             return n.toLocaleString();
         }
 
-        function mostrarModal(cedis, semanaNum, data, envios) {
+        // ===== IR A RECEPCIÓN (prellena el index) =====
+        function irARecepcion(cedis, envioId) {
+            const url = `index.html?cedis=${encodeURIComponent(cedis)}&tarea=recepcion&envio=${encodeURIComponent(envioId)}`;
+            window.location.href = url;
+        }
+
+        function mostrarModal(cedis, semanaNum, data) {
             showLoader();
             setTimeout(() => {
                 const modal = document.getElementById('modal');
@@ -1077,12 +1174,10 @@
                 const movLila = data ? data.movimientosLila : 0;
                 const movCordoba = data ? data.movimientosCordoba : 0;
                 
-                // ===== CONCILIACIÓN GENERAL (se renderiza al final) =====
                 const conc = calcularConciliacionGeneral(cedis);
                 let conciliacionHtml = '';
                 if (conc) {
                     const todoCuadra = conc.difLila === 0 && conc.difCordoba === 0;
-                    
                     let diferenciaHtml = '';
                     if (todoCuadra) {
                         diferenciaHtml = `
@@ -1116,11 +1211,9 @@
                             </div>
                         `;
                     }
-                    
                     conciliacionHtml = `
                         <div class="conciliacion-card">
                             <div class="conciliacion-title">🔍 Conciliación general (histórico)</div>
-                            
                             <div class="conciliacion-row">
                                 <span class="label">Inventario inicial</span>
                                 <div class="values">
@@ -1128,7 +1221,6 @@
                                     <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> ${formatearNumeroAbs(conc.invInicialCordoba)}</span>
                                 </div>
                             </div>
-                            
                             <div class="conciliacion-row">
                                 <span class="label">+ Entradas totales</span>
                                 <div class="values">
@@ -1136,7 +1228,6 @@
                                     <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> +${formatearNumeroAbs(conc.entradasCordoba)}</span>
                                 </div>
                             </div>
-                            
                             <div class="conciliacion-row">
                                 <span class="label">− Salidas totales</span>
                                 <div class="values">
@@ -1144,7 +1235,6 @@
                                     <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> −${formatearNumeroAbs(conc.salidasCordoba)}</span>
                                 </div>
                             </div>
-                            
                             <div class="conciliacion-row resultado">
                                 <span class="label">= Inventario calculado</span>
                                 <div class="values">
@@ -1152,7 +1242,6 @@
                                     <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> ${formatearNumeroAbs(conc.calcCordoba)}</span>
                                 </div>
                             </div>
-                            
                             <div class="conciliacion-row nuevo">
                                 <span class="label">Nuevo inventario registrado</span>
                                 <div class="values">
@@ -1160,7 +1249,6 @@
                                     <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> ${formatearNumeroAbs(conc.invFinalCordoba)}</span>
                                 </div>
                             </div>
-                            
                             ${diferenciaHtml}
                         </div>
                     `;
@@ -1209,24 +1297,6 @@
                 }
                 movimientosHtml += '</div>';
                 
-                let rutasHtml = '<div class="detail-title">🚛 ENVÍOS EN RUTA</div><div class="ruta-list">';
-                if (envios && envios.length > 0) {
-                    envios.forEach(e => {
-                        rutasHtml += `
-                            <div class="ruta-item">
-                                <span><strong>${e.id}</strong></span>
-                                <span>📅 ${formatearFechaSolo(e.fecha)}</span>
-                                <span>🚛 ${e.rutaUnidad || 'Sin caja'}</span>
-                                <span><span class="tag-inline lila">LILA</span> <span class="val-num lila">${e.cantidadLila}</span></span>
-                                <span><span class="tag-inline cordoba">CÓRDOBA</span> <span class="val-num cordoba">${e.cantidadCordoba}</span></span>
-                            </div>
-                        `;
-                    });
-                } else {
-                    rutasHtml += '<div class="ruta-item" style="justify-content:center;">No hay envíos pendientes</div>';
-                }
-                rutasHtml += '</div>';
-                
                 document.getElementById('modalBody').innerHTML = `
                     <div class="detail-card">
                         <div class="detail-title">📆 INVENTARIO BASE (Semana)</div>
@@ -1256,10 +1326,6 @@
                         ${movimientosHtml}
                     </div>
                     
-                    <div class="detail-card">
-                        ${rutasHtml}
-                    </div>
-                    
                     ${conciliacionHtml}
                 `;
                 
@@ -1285,6 +1351,11 @@
                 const data = calcularPorSemana(cedis, semanaActual);
                 const envios = obtenerEnviosPorCedis(cedis);
                 
+                // Columna del CEDIS: tarjeta principal + tarjetas de envío debajo
+                const columna = document.createElement('div');
+                columna.className = 'cedis-column';
+                
+                // Tarjeta principal
                 const card = document.createElement('div');
                 card.className = 'card';
                 
@@ -1351,7 +1422,40 @@
                         </button>
                     </div>
                 `;
-                container.appendChild(card);
+                columna.appendChild(card);
+                
+// Tarjetas de envíos en tránsito debajo de la tarjeta principal
+if (envios && envios.length > 0) {
+    envios.forEach(e => {
+        const total = (parseInt(e.cantidadLila) || 0) + (parseInt(e.cantidadCordoba) || 0);
+        const envioCard = document.createElement('div');
+        envioCard.className = 'envio-card';
+        envioCard.setAttribute('title', 'Clic para ir a recepción');
+        envioCard.innerHTML = `
+            <div class="envio-card-label">
+                <span class="pulse-dot"></span> Envío en tránsito
+            </div>
+            <div class="envio-card-id">
+                <span>📄 ${e.id}</span>
+                <span class="arrow">→</span>
+            </div>
+            <div class="envio-card-info">
+                <span class="info-item">📅 ${formatearFechaSolo(e.fecha)}</span>
+                <span class="info-item">🚛 ${e.rutaUnidad || 'Sin caja'}</span>
+                <span class="info-item">📦 ${e.origen}</span>
+            </div>
+            <div class="envio-card-cantidades" style="justify-content:flex-end; padding-top:8px; border-top:1px dashed #E2E8F0;">
+                <span class="total-badge">Total ${total} charolas</span>
+            </div>
+        `;
+        envioCard.onclick = (function(cedisActual, envioId) {
+            return function() { irARecepcion(cedisActual, envioId); };
+        })(cedis, e.id);
+        columna.appendChild(envioCard);
+    });
+}
+                
+                container.appendChild(columna);
             }
             
             document.querySelectorAll('.btn-detalle').forEach(btn => {
@@ -1360,8 +1464,7 @@
                     const cedis = this.getAttribute('data-cedis');
                     const semanaNum = parseInt(this.getAttribute('data-semana'));
                     const data = calcularPorSemana(cedis, semanaActual);
-                    const envios = obtenerEnviosPorCedis(cedis);
-                    mostrarModal(cedis, semanaNum, data, envios);
+                    mostrarModal(cedis, semanaNum, data);
                 });
             });
         }
