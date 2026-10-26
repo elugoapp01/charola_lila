@@ -186,8 +186,8 @@
                 </div>
 
                 <div class="form-field" id="fieldRuta" style="display: none;">
-                    <label for="ruta">NÚMERO DE CAJA <span class="required">*</span></label>
-                    <input type="text" id="ruta" maxlength="100" placeholder="Ej: CAJA-001">
+                    <label for="ruta">Ruta/Viaje o Número de caja <span class="required">*</span></label>
+                    <input type="text" id="ruta" maxlength="100" placeholder="Ej: GDL100 O CAJA-001">
                 </div>
 
                 <div class="form-field" id="fieldArea" style="display: none;">
@@ -556,7 +556,7 @@
                 return false;
             }
             if (tarea === 'envio' && !rutaInput.value.trim()) { 
-                showMessage('⚠️ CAPTURE EL NÚMERO DE CAJA', 'error'); 
+                showMessage('⚠️ CAPTURE EL Ruta/Viaje o Número de caja', 'error'); 
                 return false; 
             }
             if (tarea === 'recepcion' && !selectedEnvioId) { 
@@ -701,7 +701,7 @@
             document.getElementById('evidenciaEnvioTabla').innerHTML = `
                 <tr><td>CEDIS Origen</td><td>${cedis}</td></tr>
                 <tr><td>CEDIS Destino</td><td>${destino}</td></tr>
-                <tr><td>Número de caja</td><td>${numCaja}</td></tr>
+                <tr><td>Ruta/Viaje o Número de caja</td><td>${numCaja}</td></tr>
                 <tr><td>🟣 Charola Lila</td><td>${lila}</td></tr>
                 <tr><td>🟤 Charola Córdoba</td><td>${cordoba}</td></tr>
                 <tr class="total"><td>Total charolas</td><td>${total}</td></tr>
