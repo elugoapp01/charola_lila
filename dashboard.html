@@ -308,6 +308,101 @@
         .val-num.lila { color: #6B46C1; }
         .val-num.cordoba { color: #00838F; }
         
+        /* ===== SECCIÓN DE CONCILIACIÓN GENERAL ===== */
+        .conciliacion-card {
+            background: white;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+            border: 2px solid #2B6CB0;
+            box-shadow: 0 4px 12px rgba(43,108,176,0.12);
+        }
+        .conciliacion-title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #2B6CB0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #2B6CB0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .conciliacion-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            background: #F8FAFC;
+            border-radius: 10px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .conciliacion-row .label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #1A4A6F;
+        }
+        .conciliacion-row .values {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .conciliacion-row .val-pair {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .conciliacion-row .val-pair.lila { color: #6B46C1; }
+        .conciliacion-row .val-pair.cordoba { color: #00838F; }
+        .conciliacion-row.resultado {
+            background: #EBF8FF;
+            border: 1px solid #90CDF4;
+            margin-top: 4px;
+        }
+        .conciliacion-row.resultado .label { color: #2B6CB0; font-weight: 700; }
+        .conciliacion-row.nuevo {
+            background: #F0FFF4;
+            border: 1px solid #9AE6B4;
+        }
+        .conciliacion-row.nuevo .label { color: #276749; font-weight: 700; }
+        .conciliacion-row.diferencia {
+            background: #F7FAFC;
+            border: 2px solid #CBD5E0;
+            margin-top: 8px;
+            padding: 10px;
+        }
+        .conciliacion-row.diferencia .label { font-weight: 700; font-size: 0.8rem; }
+        .conciliacion-row.diferencia.positiva { background: #F0FFF4; border-color: #48BB78; }
+        .conciliacion-row.diferencia.positiva .label,
+        .conciliacion-row.diferencia.positiva .val-pair { color: #276749; }
+        .conciliacion-row.diferencia.negativa { background: #FFF5F5; border-color: #FC8181; }
+        .conciliacion-row.diferencia.negativa .label,
+        .conciliacion-row.diferencia.negativa .val-pair { color: #C53030; }
+        .conciliacion-row.diferencia.cero { background: #F7FAFC; border-color: #CBD5E0; }
+        .conciliacion-row.diferencia.cero .label,
+        .conciliacion-row.diferencia.cero .val-pair { color: #4A5568; }
+        .conciliacion-alerta {
+            font-size: 0.68rem;
+            color: #4A5568;
+            margin-top: 8px;
+            padding: 8px 10px;
+            background: #FFFAF0;
+            border-left: 3px solid #ED8936;
+            border-radius: 6px;
+        }
+        .conciliacion-alerta.ok {
+            background: #F0FFF4;
+            border-left-color: #48BB78;
+            color: #276749;
+        }
+        
         .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
         .loader-overlay.active { opacity: 1; visibility: visible; }
         .loader-content { text-align: center; }
@@ -371,6 +466,13 @@
             .detail-label { font-size: 0.55rem; }
             .detail-value { font-size: 0.65rem; }
             .movimiento-item, .ruta-item { font-size: 0.55rem; padding: 4px 8px; }
+            
+            .conciliacion-card { padding: 10px; }
+            .conciliacion-row { padding: 6px 8px; }
+            .conciliacion-row .label { font-size: 0.65rem; }
+            .conciliacion-row .val-pair { font-size: 0.7rem; }
+            .conciliacion-row.diferencia { padding: 8px; }
+            .conciliacion-row.diferencia .label { font-size: 0.72rem; }
         }
         @media (max-width: 360px) {
             .card-header h2 { font-size: 0.95rem; }
@@ -573,17 +675,150 @@
             return semanas;
         }
 
-        // Devuelve true si la tarea es un registro de inventario (de cualquier área)
         function esInventario(tarea) {
             return tarea && tarea.indexOf('Registro de Inventario') === 0;
         }
 
-        // Devuelve 'ENSAMBLE' | 'ALMACEN' | null según la tarea
         function obtenerAreaDeTarea(tarea) {
             if (!tarea) return null;
             if (tarea.indexOf('Registro de Inventario - ENSAMBLE') === 0) return 'ENSAMBLE';
             if (tarea.indexOf('Registro de Inventario - ALMACEN') === 0) return 'ALMACEN';
             return null;
+        }
+
+        // ============================================================
+        // CONCILIACIÓN GENERAL (histórico, sin importar la semana)
+        // ============================================================
+        function calcularConciliacionGeneral(cedis) {
+            const registrosCedis = datosBD
+                .filter(row => row[3] === cedis)
+                .map(row => ({ row, fecha: parseFecha(row[1], row[2]) }))
+                .filter(x => x.fecha);
+            
+            if (registrosCedis.length === 0) {
+                return null;
+            }
+            
+            registrosCedis.sort((a, b) => a.fecha - b.fecha);
+            
+            let invInicialLila = 0, invInicialCordoba = 0, fechaInicial = null;
+            let invFinalLila = 0, invFinalCordoba = 0, fechaFinal = null;
+            let entradasLila = 0, entradasCordoba = 0;
+            let salidasLila = 0, salidasCordoba = 0;
+            let hayInicial = false, hayFinal = false;
+            
+            if (cedis === 'COA') {
+                let primerEns = null, primerAlm = null;
+                let ultimoEns = null, ultimoAlm = null;
+                let fechaPrimerEns = null, fechaPrimerAlm = null;
+                let fechaUltimoEns = null, fechaUltimoAlm = null;
+                
+                for (const { row, fecha } of registrosCedis) {
+                    const tarea = row[5];
+                    if (esInventario(tarea)) {
+                        const area = obtenerAreaDeTarea(tarea);
+                        const lila = parseInt(row[7]) || 0;
+                        const cordoba = parseInt(row[9]) || 0;
+                        
+                        if (area === 'ENSAMBLE' || area === null) {
+                            if (!primerEns || fecha < fechaPrimerEns) {
+                                primerEns = { lila, cordoba };
+                                fechaPrimerEns = fecha;
+                            }
+                            if (!ultimoEns || fecha >= fechaUltimoEns) {
+                                ultimoEns = { lila, cordoba };
+                                fechaUltimoEns = fecha;
+                            }
+                        } else if (area === 'ALMACEN') {
+                            if (!primerAlm || fecha < fechaPrimerAlm) {
+                                primerAlm = { lila, cordoba };
+                                fechaPrimerAlm = fecha;
+                            }
+                            if (!ultimoAlm || fecha >= fechaUltimoAlm) {
+                                ultimoAlm = { lila, cordoba };
+                                fechaUltimoAlm = fecha;
+                            }
+                        }
+                    }
+                }
+                
+                for (const { row } of registrosCedis) {
+                    const tarea = row[5];
+                    if (esInventario(tarea)) continue;
+                    const lila = parseInt(row[7]) || 0;
+                    const cordoba = parseInt(row[9]) || 0;
+                    if (lila > 0 || cordoba > 0) {
+                        entradasLila += lila;
+                        entradasCordoba += cordoba;
+                    }
+                    if (lila < 0 || cordoba < 0) {
+                        salidasLila += Math.abs(lila);
+                        salidasCordoba += Math.abs(cordoba);
+                    }
+                }
+                
+                if (primerEns || primerAlm) {
+                    invInicialLila = (primerEns ? primerEns.lila : 0) + (primerAlm ? primerAlm.lila : 0);
+                    invInicialCordoba = (primerEns ? primerEns.cordoba : 0) + (primerAlm ? primerAlm.cordoba : 0);
+                    const fechasIni = [fechaPrimerEns, fechaPrimerAlm].filter(Boolean).sort((a,b)=>a-b);
+                    fechaInicial = fechasIni[0] || null;
+                    hayInicial = true;
+                }
+                
+                if (ultimoEns || ultimoAlm) {
+                    invFinalLila = (ultimoEns ? ultimoEns.lila : 0) + (ultimoAlm ? ultimoAlm.lila : 0);
+                    invFinalCordoba = (ultimoEns ? ultimoEns.cordoba : 0) + (ultimoAlm ? ultimoAlm.cordoba : 0);
+                    const fechasFin = [fechaUltimoEns, fechaUltimoAlm].filter(Boolean).sort((a,b)=>b-a);
+                    fechaFinal = fechasFin[0] || null;
+                    hayFinal = true;
+                }
+            } else {
+                for (const { row, fecha } of registrosCedis) {
+                    const tarea = row[5];
+                    const lila = parseInt(row[7]) || 0;
+                    const cordoba = parseInt(row[9]) || 0;
+                    
+                    if (esInventario(tarea)) {
+                        if (!hayInicial) {
+                            invInicialLila = lila;
+                            invInicialCordoba = cordoba;
+                            fechaInicial = fecha;
+                            hayInicial = true;
+                        }
+                        invFinalLila = lila;
+                        invFinalCordoba = cordoba;
+                        fechaFinal = fecha;
+                        hayFinal = true;
+                    } else {
+                        if (lila > 0 || cordoba > 0) {
+                            entradasLila += lila;
+                            entradasCordoba += cordoba;
+                        }
+                        if (lila < 0 || cordoba < 0) {
+                            salidasLila += Math.abs(lila);
+                            salidasCordoba += Math.abs(cordoba);
+                        }
+                    }
+                }
+            }
+            
+            if (!hayInicial || !hayFinal) {
+                return null;
+            }
+            
+            const calcLila = invInicialLila + entradasLila - salidasLila;
+            const calcCordoba = invInicialCordoba + entradasCordoba - salidasCordoba;
+            const difLila = invFinalLila - calcLila;
+            const difCordoba = invFinalCordoba - calcCordoba;
+            
+            return {
+                invInicialLila, invInicialCordoba, fechaInicial,
+                entradasLila, entradasCordoba,
+                salidasLila, salidasCordoba,
+                calcLila, calcCordoba,
+                invFinalLila, invFinalCordoba, fechaFinal,
+                difLila, difCordoba
+            };
         }
 
         function calcularPorSemana(cedis, semanaKey) {
@@ -613,11 +848,10 @@
             let movimientosDetalle = [];
             
             if (cedis === 'COA') {
-                // COA: inventario se compone de ENSAMBLE + ALMACEN (último de cada uno)
-                let ultimoEnsamblеBase = null, fechaEnsamblеBase = null;
-                let ultimoAlmacenBase = null, fechaAlmacenBase = null;
-                let ultimoEnsamblеFinal = null, fechaEnsamblеFinal = null;
-                let ultimoAlmacenFinal = null, fechaAlmacenFinal = null;
+                let ultimoEnsBase = null, fechaEnsBase = null;
+                let ultimoAlmBase = null, fechaAlmBase = null;
+                let ultimoEnsFinal = null, fechaEnsFinal = null;
+                let ultimoAlmFinal = null, fechaAlmFinal = null;
                 
                 for (const row of registrosCedis) {
                     const fecha = parseFecha(row[1], row[2]);
@@ -628,42 +862,29 @@
                         const cantLila = parseInt(row[7]) || 0;
                         const cantCordoba = parseInt(row[9]) || 0;
                         
-                        // Base: último antes o dentro de la semana (por área)
                         if (fecha <= finSemana) {
-                            if (area === 'ENSAMBLE') {
-                                if (!ultimoEnsamblеBase || fecha >= fechaEnsamblеBase) {
-                                    ultimoEnsamblеBase = { lila: cantLila, cordoba: cantCordoba };
-                                    fechaEnsamblеBase = fecha;
+                            if (area === 'ENSAMBLE' || area === null) {
+                                if (!ultimoEnsBase || fecha >= fechaEnsBase) {
+                                    ultimoEnsBase = { lila: cantLila, cordoba: cantCordoba };
+                                    fechaEnsBase = fecha;
                                 }
                             } else if (area === 'ALMACEN') {
-                                if (!ultimoAlmacenBase || fecha >= fechaAlmacenBase) {
-                                    ultimoAlmacenBase = { lila: cantLila, cordoba: cantCordoba };
-                                    fechaAlmacenBase = fecha;
-                                }
-                            } else {
-                                // Registro viejo sin área: lo tratamos como ENSAMBLE por compatibilidad
-                                if (!ultimoEnsamblеBase || fecha >= fechaEnsamblеBase) {
-                                    ultimoEnsamblеBase = { lila: cantLila, cordoba: cantCordoba };
-                                    fechaEnsamblеBase = fecha;
+                                if (!ultimoAlmBase || fecha >= fechaAlmBase) {
+                                    ultimoAlmBase = { lila: cantLila, cordoba: cantCordoba };
+                                    fechaAlmBase = fecha;
                                 }
                             }
                         }
-                        // Final: último dentro de la semana (por área)
                         if (fecha >= inicioSemana && fecha <= finSemana) {
-                            if (area === 'ENSAMBLE') {
-                                if (!ultimoEnsamblеFinal || fecha >= fechaEnsamblеFinal) {
-                                    ultimoEnsamblеFinal = { lila: cantLila, cordoba: cantCordoba };
-                                    fechaEnsamblеFinal = fecha;
+                            if (area === 'ENSAMBLE' || area === null) {
+                                if (!ultimoEnsFinal || fecha >= fechaEnsFinal) {
+                                    ultimoEnsFinal = { lila: cantLila, cordoba: cantCordoba };
+                                    fechaEnsFinal = fecha;
                                 }
                             } else if (area === 'ALMACEN') {
-                                if (!ultimoAlmacenFinal || fecha >= fechaAlmacenFinal) {
-                                    ultimoAlmacenFinal = { lila: cantLila, cordoba: cantCordoba };
-                                    fechaAlmacenFinal = fecha;
-                                }
-                            } else {
-                                if (!ultimoEnsamblеFinal || fecha >= fechaEnsamblеFinal) {
-                                    ultimoEnsamblеFinal = { lila: cantLila, cordoba: cantCordoba };
-                                    fechaEnsamblеFinal = fecha;
+                                if (!ultimoAlmFinal || fecha >= fechaAlmFinal) {
+                                    ultimoAlmFinal = { lila: cantLila, cordoba: cantCordoba };
+                                    fechaAlmFinal = fecha;
                                 }
                             }
                         }
@@ -684,15 +905,14 @@
                     }
                 }
                 
-                // Sumar Ensamble + Almacén para base y final
-                const baseL = (ultimoEnsamblеBase ? ultimoEnsamblеBase.lila : 0) + (ultimoAlmacenBase ? ultimoAlmacenBase.lila : 0);
-                const baseC = (ultimoEnsamblеBase ? ultimoEnsamblеBase.cordoba : 0) + (ultimoAlmacenBase ? ultimoAlmacenBase.cordoba : 0);
-                const finalL = (ultimoEnsamblеFinal ? ultimoEnsamblеFinal.lila : 0) + (ultimoAlmacenFinal ? ultimoAlmacenFinal.lila : 0);
-                const finalC = (ultimoEnsamblеFinal ? ultimoEnsamblеFinal.cordoba : 0) + (ultimoAlmacenFinal ? ultimoAlmacenFinal.cordoba : 0);
-                const hayBase = !!(ultimoEnsamblеBase || ultimoAlmacenBase);
-                const hayFinal = !!(ultimoEnsamblеFinal || ultimoAlmacenFinal);
-                const fechaBaseFinal = [fechaEnsamblеBase, fechaAlmacenBase].filter(Boolean).sort((a,b)=>b-a)[0] || null;
-                const fechaFinalFinal = [fechaEnsamblеFinal, fechaAlmacenFinal].filter(Boolean).sort((a,b)=>b-a)[0] || null;
+                const baseL = (ultimoEnsBase ? ultimoEnsBase.lila : 0) + (ultimoAlmBase ? ultimoAlmBase.lila : 0);
+                const baseC = (ultimoEnsBase ? ultimoEnsBase.cordoba : 0) + (ultimoAlmBase ? ultimoAlmBase.cordoba : 0);
+                const finalL = (ultimoEnsFinal ? ultimoEnsFinal.lila : 0) + (ultimoAlmFinal ? ultimoAlmFinal.lila : 0);
+                const finalC = (ultimoEnsFinal ? ultimoEnsFinal.cordoba : 0) + (ultimoAlmFinal ? ultimoAlmFinal.cordoba : 0);
+                const hayBase = !!(ultimoEnsBase || ultimoAlmBase);
+                const hayFinal = !!(ultimoEnsFinal || ultimoAlmFinal);
+                const fechaBaseFinal = [fechaEnsBase, fechaAlmBase].filter(Boolean).sort((a,b)=>b-a)[0] || null;
+                const fechaFinalFinal = [fechaEnsFinal, fechaAlmFinal].filter(Boolean).sort((a,b)=>b-a)[0] || null;
                 
                 if (hayBase) {
                     inventarioBase = { lila: baseL, cordoba: baseC };
@@ -703,7 +923,6 @@
                     fechaFinal = fechaFinalFinal;
                 }
             } else {
-                // Otros CEDIS: último Registro de Inventario (sin área)
                 for (const row of registrosCedis) {
                     const fecha = parseFecha(row[1], row[2]);
                     if (!fecha) continue;
@@ -836,6 +1055,14 @@
             actualizarDashboard();
         }
 
+        function formatearNumero(n) {
+            return (n >= 0 ? '+' : '') + n.toLocaleString();
+        }
+
+        function formatearNumeroAbs(n) {
+            return n.toLocaleString();
+        }
+
         function mostrarModal(cedis, semanaNum, data, envios) {
             showLoader();
             setTimeout(() => {
@@ -850,11 +1077,100 @@
                 const movLila = data ? data.movimientosLila : 0;
                 const movCordoba = data ? data.movimientosCordoba : 0;
                 
+                // ===== CONCILIACIÓN GENERAL (se renderiza al final) =====
+                const conc = calcularConciliacionGeneral(cedis);
+                let conciliacionHtml = '';
+                if (conc) {
+                    const todoCuadra = conc.difLila === 0 && conc.difCordoba === 0;
+                    
+                    let diferenciaHtml = '';
+                    if (todoCuadra) {
+                        diferenciaHtml = `
+                            <div class="conciliacion-row diferencia cero">
+                                <span class="label">Diferencia</span>
+                                <div class="values">
+                                    <span class="val-pair lila"><span class="tag-inline lila">LILA</span> 0</span>
+                                    <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> 0</span>
+                                </div>
+                            </div>
+                            <div class="conciliacion-alerta ok">✅ El inventario cuadra perfectamente con los movimientos históricos.</div>
+                        `;
+                    } else {
+                        const claseLila = conc.difLila > 0 ? 'positiva' : (conc.difLila < 0 ? 'negativa' : 'cero');
+                        const claseCordoba = conc.difCordoba > 0 ? 'positiva' : (conc.difCordoba < 0 ? 'negativa' : 'cero');
+                        diferenciaHtml = `
+                            <div class="conciliacion-row diferencia ${claseLila}">
+                                <span class="label">Diferencia LILA</span>
+                                <div class="values">
+                                    <span class="val-pair lila">${formatearNumero(conc.difLila)}</span>
+                                </div>
+                            </div>
+                            <div class="conciliacion-row diferencia ${claseCordoba}">
+                                <span class="label">Diferencia CÓRDOBA</span>
+                                <div class="values">
+                                    <span class="val-pair cordoba">${formatearNumero(conc.difCordoba)}</span>
+                                </div>
+                            </div>
+                            <div class="conciliacion-alerta">
+                                ⚠️ Hay una diferencia entre el inventario calculado y el nuevo inventario registrado. Revisa los movimientos históricos.
+                            </div>
+                        `;
+                    }
+                    
+                    conciliacionHtml = `
+                        <div class="conciliacion-card">
+                            <div class="conciliacion-title">🔍 Conciliación general (histórico)</div>
+                            
+                            <div class="conciliacion-row">
+                                <span class="label">Inventario inicial</span>
+                                <div class="values">
+                                    <span class="val-pair lila"><span class="tag-inline lila">LILA</span> ${formatearNumeroAbs(conc.invInicialLila)}</span>
+                                    <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> ${formatearNumeroAbs(conc.invInicialCordoba)}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="conciliacion-row">
+                                <span class="label">+ Entradas totales</span>
+                                <div class="values">
+                                    <span class="val-pair lila"><span class="tag-inline lila">LILA</span> +${formatearNumeroAbs(conc.entradasLila)}</span>
+                                    <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> +${formatearNumeroAbs(conc.entradasCordoba)}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="conciliacion-row">
+                                <span class="label">− Salidas totales</span>
+                                <div class="values">
+                                    <span class="val-pair lila"><span class="tag-inline lila">LILA</span> −${formatearNumeroAbs(conc.salidasLila)}</span>
+                                    <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> −${formatearNumeroAbs(conc.salidasCordoba)}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="conciliacion-row resultado">
+                                <span class="label">= Inventario calculado</span>
+                                <div class="values">
+                                    <span class="val-pair lila"><span class="tag-inline lila">LILA</span> ${formatearNumeroAbs(conc.calcLila)}</span>
+                                    <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> ${formatearNumeroAbs(conc.calcCordoba)}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="conciliacion-row nuevo">
+                                <span class="label">Nuevo inventario registrado</span>
+                                <div class="values">
+                                    <span class="val-pair lila"><span class="tag-inline lila">LILA</span> ${formatearNumeroAbs(conc.invFinalLila)}</span>
+                                    <span class="val-pair cordoba"><span class="tag-inline cordoba">CÓRDOBA</span> ${formatearNumeroAbs(conc.invFinalCordoba)}</span>
+                                </div>
+                            </div>
+                            
+                            ${diferenciaHtml}
+                        </div>
+                    `;
+                }
+                
                 let nuevoHtml = '';
                 if (data && data.finalLila !== null) {
                     nuevoHtml = `
                         <div class="detail-card">
-                            <div class="detail-title">🆕 NUEVO INVENTARIO REGISTRADO</div>
+                            <div class="detail-title">🆕 NUEVO INVENTARIO DE LA SEMANA</div>
                             <div class="detail-row">
                                 <span class="detail-row-label">Fecha</span>
                                 <span class="detail-row-value">${data.fechaFinal || 'N/A'}</span>
@@ -913,7 +1229,7 @@
                 
                 document.getElementById('modalBody').innerHTML = `
                     <div class="detail-card">
-                        <div class="detail-title">📆 INVENTARIO BASE</div>
+                        <div class="detail-title">📆 INVENTARIO BASE (Semana)</div>
                         <div class="detail-row">
                             <span class="detail-row-label">Fecha</span>
                             <span class="detail-row-value">${baseFecha}</span>
@@ -925,7 +1241,7 @@
                     </div>
                     
                     <div class="detail-card">
-                        <div class="detail-title">📈 INVENTARIO ACTUAL</div>
+                        <div class="detail-title">📈 INVENTARIO ACTUAL (Semana)</div>
                         <div class="detail-grid">
                             <div class="detail-item"><span class="detail-label">Lila</span><span class="detail-value lila">${actualLila.toLocaleString()}</span></div>
                             <div class="detail-item"><span class="detail-label">Córdoba</span><span class="detail-value cordoba">${actualCordoba.toLocaleString()}</span></div>
@@ -943,6 +1259,8 @@
                     <div class="detail-card">
                         ${rutasHtml}
                     </div>
+                    
+                    ${conciliacionHtml}
                 `;
                 
                 modal.classList.add('active');
