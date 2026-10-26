@@ -90,7 +90,7 @@
         .badge-diff-pos { color: #22543D; font-weight: 700; }
         .badge-diff-neg { color: #742A2A; font-weight: 700; }
 
-        /* MODAL DE EVIDENCIA (envío / inventario) */
+        /* MODAL DE EVIDENCIA */
         .evidence-box { border-left: 4px solid #2B6CB0; max-width: 560px; padding-top: 0; }
         .evidence-header {
             background: linear-gradient(135deg, #0B2B4E 0%, #1A4A6F 100%);
@@ -151,11 +151,10 @@
     <div class="main-container">
         <div class="form-single">
             <form id="controlForm">
-                <!-- 1. SELECCIONA TU CEDIS -->
                 <div class="form-field">
                     <label for="cedis">SELECCIONA TU CEDIS <span class="required">*</span></label>
                     <select id="cedis" required>
-                        <option value="">SELECCIONE UN CEDIS</option>
+                        <option value="" disabled selected>—</option>
                         <option value="COA">COA</option>
                         <option value="MONTERREY">MONTERREY</option>
                         <option value="GUADALAJARA">GUADALAJARA</option>
@@ -164,22 +163,20 @@
                     </select>
                 </div>
 
-                <!-- 2. TAREA A REALIZAR -->
                 <div class="form-field" id="fieldTarea" style="display: none;">
                     <label for="tarea">TAREA A REALIZAR <span class="required">*</span></label>
                     <select id="tarea">
-                        <option value="">SELECCIONE UNA TAREA</option>
+                        <option value="" disabled selected>—</option>
                         <option value="envio">ENVÍO DE CHAROLAS</option>
                         <option value="recepcion">RECEPCIÓN DE CHAROLAS</option>
                         <option value="inventario">INVENTARIOS</option>
                     </select>
                 </div>
 
-                <!-- 3. CEDIS DESTINO (solo envío) -->
                 <div class="form-field" id="fieldCedisDestino" style="display: none;">
                     <label for="cedisDestino">CEDIS DESTINO <span class="required">*</span></label>
                     <select id="cedisDestino">
-                        <option value="">SELECCIONE UN CEDIS</option>
+                        <option value="" disabled selected>—</option>
                     </select>
                 </div>
 
@@ -191,8 +188,18 @@
                 </div>
 
                 <div class="form-field" id="fieldRuta" style="display: none;">
-                    <label for="ruta">RUTA DE ENVÍO <span class="required">*</span></label>
-                    <input type="text" id="ruta" maxlength="100" placeholder="Ej: RUTA 45">
+                    <label for="ruta">NÚMERO DE CAJA <span class="required">*</span></label>
+                    <input type="text" id="ruta" maxlength="100" placeholder="Ej: CAJA-001">
+                </div>
+
+                <!-- ÁREA (solo COA + inventario) -->
+                <div class="form-field" id="fieldArea" style="display: none;">
+                    <label for="area">ÁREA <span class="required">*</span></label>
+                    <select id="area">
+                        <option value="" disabled selected>—</option>
+                        <option value="ENSAMBLE">ENSAMBLE</option>
+                        <option value="ALMACEN">ALMACÉN</option>
+                    </select>
                 </div>
 
                 <div id="fieldCantidades" style="display: none;">
@@ -219,7 +226,7 @@
 
     <footer class="corporate-footer"><p>SISTEMA DE CONTROL DE CHAROLAS | TODOS LOS DERECHOS RESERVADOS © E.LUGO 2026</p></footer>
 
-    <!-- MODAL 1: Advertencia por diferencia (recepción) -->
+    <!-- MODAL 1: Advertencia -->
     <div class="modal-overlay" id="modalWarning">
         <div class="modal-box warning-box">
             <h3><span class="modal-icon">⚠️</span> LAS CANTIDADES NO COINCIDEN</h3>
@@ -233,7 +240,7 @@
         </div>
     </div>
 
-    <!-- MODAL 2: Confirmación final (recepción) -->
+    <!-- MODAL 2: Confirmación -->
     <div class="modal-overlay" id="modalConfirm">
         <div class="modal-box confirm-box">
             <h3><span class="modal-icon">✅</span> CONFIRMAR REGISTRO</h3>
@@ -306,7 +313,7 @@
     </div>
 
     <script>
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPXY7-hxwVYLjQsDOQyCvmKkqpKQY-Eil3AxiQn1-_zQTFJ9enw7Be9LU72AJUTUIguw/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzKTPNH2IMNrpCGPBNA5T0VV2E00bjCfKT_3UojSUTt6c3xLVVde7HWgu_uL0wHei0o/exec';
         
         let selectedEnvioId = null;
         let envioSeleccionado = null;
@@ -314,6 +321,8 @@
         const cedisSelect = document.getElementById('cedis');
         const cedisDestinoSelect = document.getElementById('cedisDestino');
         const tareaSelect = document.getElementById('tarea');
+        const areaSelect = document.getElementById('area');
+        const fieldArea = document.getElementById('fieldArea');
         const fieldCedisDestino = document.getElementById('fieldCedisDestino');
         const fieldTarea = document.getElementById('fieldTarea');
         const fieldEnviosPendientes = document.getElementById('fieldEnviosPendientes');
@@ -332,8 +341,9 @@
             window.location.href = 'dashboard.html';
         }
 
-        charolaLila.addEventListener('focus', () => { if (charolaLila.value === '0') charolaLila.select(); });
-        charolaCordoba.addEventListener('focus', () => { if (charolaCordoba.value === '0') charolaCordoba.select(); });
+        [charolaLila, charolaCordoba].forEach(inp => {
+            inp.addEventListener('focus', () => { if (inp.value === '0') inp.select(); });
+        });
 
         function formatearFechaSolo(fechaStr) {
             if (!fechaStr) return 'Sin fecha';
@@ -379,14 +389,16 @@
             fieldEnviosPendientes.style.display = 'none';
             fieldRuta.style.display = 'none';
             fieldCantidades.style.display = 'none';
+            fieldArea.style.display = 'none';
             submitContainer.style.display = 'none';
             tareaSelect.innerHTML = `
-                <option value="">SELECCIONE UNA TAREA</option>
+                <option value="" disabled selected>—</option>
                 <option value="envio">ENVÍO DE CHAROLAS</option>
                 <option value="recepcion">RECEPCIÓN DE CHAROLAS</option>
                 <option value="inventario">INVENTARIOS</option>
             `;
-            cedisDestinoSelect.innerHTML = '<option value="">SELECCIONE UN CEDIS</option>';
+            cedisDestinoSelect.innerHTML = '<option value="" disabled selected>—</option>';
+            areaSelect.value = '';
             rutaInput.value = '';
             charolaLila.value = '0';
             charolaCordoba.value = '0';
@@ -403,11 +415,13 @@
             fieldEnviosPendientes.style.display = 'none';
             fieldRuta.style.display = 'none';
             fieldCantidades.style.display = 'none';
+            fieldArea.style.display = 'none';
             submitContainer.style.display = 'none';
             selectedEnvioId = null;
             envioSeleccionado = null;
             listaEnviosDiv.innerHTML = '';
-            cedisDestinoSelect.innerHTML = '<option value="">SELECCIONE UN CEDIS</option>';
+            cedisDestinoSelect.innerHTML = '<option value="" disabled selected>—</option>';
+            areaSelect.value = '';
             
             tareaSelect.value = '';
             
@@ -417,7 +431,7 @@
 
         function llenarCedisDestino() {
             const cedis = cedisSelect.value;
-            cedisDestinoSelect.innerHTML = '<option value="">SELECCIONE UN CEDIS</option>';
+            cedisDestinoSelect.innerHTML = '<option value="" disabled selected>—</option>';
             const opciones = ['COA', 'MONTERREY', 'GUADALAJARA', 'HERMOSILLO', 'CANCUN'];
             opciones.forEach(op => {
                 if (op !== cedis) {
@@ -452,7 +466,7 @@
                                 <div class="envio-id">📄 ${envio.id}</div>
                                 <div class="envio-row">
                                     <span class="envio-info">📅 ${formatearFechaSolo(envio.fecha)}</span>
-                                    <span class="envio-info">🚛 ${envio.rutaUnidad || 'No registrado'}</span>
+                                    <span class="envio-info">🚛 ${envio.rutaUnidad || 'Sin caja'}</span>
                                     <span class="envio-info">📦 Origen: ${envio.origen}</span>
                                     <span class="envio-info"><strong>Total ${total} charolas</strong></span>
                                 </div>
@@ -489,6 +503,7 @@
             fieldEnviosPendientes.style.display = 'none';
             fieldRuta.style.display = 'none';
             fieldCantidades.style.display = 'none';
+            fieldArea.style.display = 'none';
             submitContainer.style.display = 'none';
             selectedEnvioId = null;
             envioSeleccionado = null;
@@ -496,6 +511,7 @@
             rutaInput.value = '';
             charolaLila.value = '0';
             charolaCordoba.value = '0';
+            areaSelect.value = '';
             
             if (!cedis || !tarea) return;
             
@@ -511,6 +527,9 @@
                 submitContainer.style.display = 'block';
                 cargarEnviosPendientes();
             } else if (tarea === 'inventario') {
+                if (cedis === 'COA') {
+                    fieldArea.style.display = 'block';
+                }
                 fieldCantidades.style.display = 'block';
                 submitContainer.style.display = 'block';
             }
@@ -518,6 +537,7 @@
 
         function validarCampos() {
             const tarea = tareaSelect.value;
+            const cedis = cedisSelect.value;
             const lila = parseInt(charolaLila.value) || 0;
             const cordoba = parseInt(charolaCordoba.value) || 0;
             
@@ -530,12 +550,16 @@
                 return false;
             }
             if (tarea === 'envio' && !rutaInput.value.trim()) { 
-                showMessage('⚠️ CAPTURE LA RUTA', 'error'); 
+                showMessage('⚠️ CAPTURE EL NÚMERO DE CAJA', 'error'); 
                 return false; 
             }
             if (tarea === 'recepcion' && !selectedEnvioId) { 
                 showMessage('⚠️ SELECCIONE UN ENVÍO', 'error'); 
                 return false; 
+            }
+            if (tarea === 'inventario' && cedis === 'COA' && !areaSelect.value) {
+                showMessage('⚠️ SELECCIONE EL ÁREA (ENSAMBLE O ALMACÉN)', 'error');
+                return false;
             }
             return true;
         }
@@ -650,7 +674,6 @@
             }
         }
 
-        // ===== FECHA/HORA =====
         function obtenerFechaHoraActual() {
             const ahora = new Date();
             const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Mexico_City' };
@@ -665,7 +688,7 @@
         function abrirEvidenciaEnvio() {
             const cedis = cedisSelect.value;
             const destino = cedisDestinoSelect.value;
-            const ruta = rutaInput.value || 'No especificada';
+            const numCaja = rutaInput.value || 'No especificado';
             const lila = parseInt(charolaLila.value) || 0;
             const cordoba = parseInt(charolaCordoba.value) || 0;
             const total = lila + cordoba;
@@ -674,7 +697,7 @@
             document.getElementById('evidenciaEnvioTabla').innerHTML = `
                 <tr><td>CEDIS Origen</td><td>${cedis}</td></tr>
                 <tr><td>CEDIS Destino</td><td>${destino}</td></tr>
-                <tr><td>Ruta / Unidad</td><td>${ruta}</td></tr>
+                <tr><td>Número de caja</td><td>${numCaja}</td></tr>
                 <tr><td>🟣 Charola Lila</td><td>${lila}</td></tr>
                 <tr><td>🟤 Charola Córdoba</td><td>${cordoba}</td></tr>
                 <tr class="total"><td>Total charolas</td><td>${total}</td></tr>
@@ -736,12 +759,17 @@
             const total = lila + cordoba;
             const { fecha, hora } = obtenerFechaHoraActual();
             
-            document.getElementById('evidenciaInventarioTabla').innerHTML = `
-                <tr><td>CEDIS</td><td>${cedis}</td></tr>
+            let filasHtml = `<tr><td>CEDIS</td><td>${cedis}</td></tr>`;
+            if (cedis === 'COA') {
+                filasHtml += `<tr><td>Área</td><td>${areaSelect.value}</td></tr>`;
+            }
+            filasHtml += `
                 <tr><td>🟣 Charola Lila</td><td>${lila}</td></tr>
                 <tr><td>🟤 Charola Córdoba</td><td>${cordoba}</td></tr>
                 <tr class="total"><td>Total charolas</td><td>${total}</td></tr>
             `;
+            
+            document.getElementById('evidenciaInventarioTabla').innerHTML = filasHtml;
             document.getElementById('evidenciaInventarioFecha').textContent = fecha;
             document.getElementById('evidenciaInventarioHora').textContent = 'Hora de registro: ' + hora;
             document.getElementById('modalEvidenciaInventario').classList.add('active');
@@ -761,6 +789,9 @@
             params.append('cedis', cedis);
             params.append('charolaLila', charolaLila.value);
             params.append('charolaCordoba', charolaCordoba.value);
+            if (cedis === 'COA') {
+                params.append('area', areaSelect.value);
+            }
             
             showLoader();
             const btn = document.getElementById('btnConfirmarInventario');
@@ -800,7 +831,6 @@
             
             if (!validarCampos()) return;
             
-            // Recepción: flujo de modales de validación
             if (tarea === 'recepcion') {
                 const lilaRec = parseInt(charolaLila.value)||0;
                 const cordobaRec = parseInt(charolaCordoba.value)||0;
@@ -817,13 +847,11 @@
                 return;
             }
             
-            // Envío: modal de evidencia
             if (tarea === 'envio') {
                 abrirEvidenciaEnvio();
                 return;
             }
             
-            // Inventario: modal de evidencia
             if (tarea === 'inventario') {
                 abrirEvidenciaInventario();
                 return;
