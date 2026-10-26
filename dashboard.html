@@ -121,7 +121,6 @@
             min-height: 200px;
         }
         .card:hover { transform: translateY(-4px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15); }
-        .card:hover::after { box-shadow: inset 0 0 0 2px rgba(26,74,111,0.2), 0 0 0 4px rgba(26,74,111,0.1); }
         
         .card-header { 
             background: linear-gradient(135deg, #1A4A6F 0%, #0B2B4E 100%); 
@@ -138,7 +137,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
         }
         .stat-main { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #EDF2F7; }
         .stat-main-label { 
@@ -147,22 +146,86 @@
             color: #718096; 
             text-transform: uppercase; 
             letter-spacing: 0.5px;
-            margin-bottom: 4px; 
+            margin-bottom: 6px; 
             display: block; 
         }
-        .stat-main-value { font-size: 1rem; font-weight: 600; }
-        .stat-main-value .lila { color: #6B46C1; }
-        .stat-main-value .cordoba { color: #DD6B20; }
+        .stat-main-value { display: flex; flex-direction: column; gap: 4px; }
+        .stat-main-value .val-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .stat-main-value .tag {
+            font-size: 0.58rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .stat-main-value .tag.lila {
+            background: #F3E8FF;
+            color: #6B46C1;
+        }
+        .stat-main-value .tag.cordoba {
+            background: #E0F7FA;
+            color: #00838F;
+        }
+        .stat-main-value .num.lila { color: #6B46C1; }
+        .stat-main-value .num.cordoba { color: #00838F; }
         
-        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .stat-label { font-size: 0.7rem; font-weight: 500; color: #4A5568; }
-        .stat-numbers { display: flex; gap: 12px; }
-        .stat-number { font-size: 0.85rem; font-weight: 600; }
-        .stat-number.lila { color: #6B46C1; }
-        .stat-number.cordoba { color: #DD6B20; }
+        /* Fila Entradas / Salidas: label a la izquierda, dos valores en columnas a la derecha */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+        .stat-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #4A5568;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            flex-shrink: 0;
+        }
+        .stat-numbers {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .stat-numbers .val-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .stat-numbers .tag {
+            font-size: 0.5rem;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .stat-numbers .tag.lila {
+            background: #F3E8FF;
+            color: #6B46C1;
+        }
+        .stat-numbers .tag.cordoba {
+            background: #E0F7FA;
+            color: #00838F;
+        }
+        .stat-numbers .num.lila { color: #6B46C1; }
+        .stat-numbers .num.cordoba { color: #00838F; }
         
         .envios-ruta { 
-            margin-top: 8px; 
+            margin-top: auto; 
             padding-top: 8px; 
             border-top: 1px solid #EDF2F7; 
             flex-shrink: 0;
@@ -229,16 +292,40 @@
         .detail-label { font-size: 0.6rem; color: #64748B; font-weight: 500; }
         .detail-value { font-size: 0.75rem; font-weight: 700; color: #1E293B; text-align: right; }
         .detail-value.lila { color: #6B46C1; }
-        .detail-value.cordoba { color: #DD6B20; }
+        .detail-value.cordoba { color: #00838F; }
         .detail-value.positive { color: #276749; }
         .detail-value.negative { color: #C53030; }
         
         .movimiento-list, .ruta-list { background: white; border-radius: 12px; overflow: visible; border: 1px solid #EDF2F7; margin-top: 8px; }
-        .movimiento-item, .ruta-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1px solid #EDF2F7; font-size: 0.6rem; flex-wrap: wrap; gap: 4px; }
+        .movimiento-item, .ruta-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #EDF2F7; font-size: 0.6rem; flex-wrap: wrap; gap: 6px; }
         .movimiento-item:last-child, .ruta-item:last-child { border-bottom: none; }
         .movimiento-tipo { font-weight: 600; padding: 2px 6px; border-radius: 20px; font-size: 0.5rem; }
         .movimiento-tipo.envio { background: #FEE2E2; color: #DC2626; }
         .movimiento-tipo.recepcion { background: #DCFCE7; color: #16A34A; }
+        
+        /* Etiquetas LILA / CÓRDOBA reutilizables en tablas de modal */
+        .tag-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.58rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .tag-inline.lila {
+            background: #F3E8FF;
+            color: #6B46C1;
+        }
+        .tag-inline.cordoba {
+            background: #E0F7FA;
+            color: #00838F;
+        }
+        .val-num { font-weight: 700; }
+        .val-num.lila { color: #6B46C1; }
+        .val-num.cordoba { color: #00838F; }
         
         .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
         .loader-overlay.active { opacity: 1; visibility: visible; }
@@ -292,10 +379,11 @@
             .card-header { padding: 12px 8px; }
             .card-header h2 { font-size: 1.1rem; }
             .card-stats { padding: 14px 16px; }
-            .stat-main-value { font-size: 1rem; }
-            .stat-number { font-size: 0.9rem; }
-            .stat-label { font-size: 0.75rem; }
-            .stat-numbers { gap: 16px; }
+            .stat-main-value .val-line { font-size: 0.95rem; }
+            .stat-label { font-size: 0.72rem; }
+            .stat-numbers { gap: 6px; }
+            .stat-numbers .val-line { font-size: 0.75rem; }
+            .stat-numbers .tag { font-size: 0.48rem; padding: 1px 4px; }
             .card-footer { padding: 12px 8px; }
             .btn-detalle { font-size: 0.8rem; padding: 8px 20px; }
             .dashboard-header { padding: 10px 14px; }
@@ -333,9 +421,8 @@
         }
         @media (max-width: 360px) {
             .card-header h2 { font-size: 0.95rem; }
-            .stat-main-value { font-size: 0.9rem; }
-            .stat-number { font-size: 0.8rem; }
-            .stat-numbers { gap: 12px; }
+            .stat-main-value .val-line { font-size: 0.85rem; }
+            .stat-numbers .val-line { font-size: 0.7rem; }
             .cards-container { gap: 20px; margin: 0 8px 8px 8px; padding: 0 8px; }
             .btn-detalle { font-size: 0.7rem; padding: 6px 14px; }
         }
@@ -405,7 +492,7 @@
     </footer>
 
     <script>
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz32ynxfGn932tFpNw59Ots0iNSU9p9nlPnlDnUQ4rn8i8plBDh1Z8yH4aAwSAYWMNF5g/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPXY7-hxwVYLjQsDOQyCvmKkqpKQY-Eil3AxiQn1-_zQTFJ9enw7Be9LU72AJUTUIguw/exec';
         
         const CEDIS_LIST = ['COA', 'MONTERREY', 'GUADALAJARA', 'HERMOSILLO', 'CANCUN'];
         
@@ -563,23 +650,12 @@
             const semanaData = semanasDisponibles.find(s => `${s.año}-${s.semana}` === semanaKey);
             if (!semanaData) {
                 return {
-                    baseLila: 0,
-                    baseCordoba: 0,
-                    fechaBase: null,
-                    movimientosLila: 0,
-                    movimientosCordoba: 0,
-                    movimientosDetalle: [],
-                    entradasLila: 0,
-                    entradasCordoba: 0,
-                    salidasLila: 0,
-                    salidasCordoba: 0,
-                    actualLila: 0,
-                    actualCordoba: 0,
-                    finalLila: null,
-                    finalCordoba: null,
-                    fechaFinal: null,
-                    diferenciaLila: null,
-                    diferenciaCordoba: null
+                    baseLila: 0, baseCordoba: 0, fechaBase: null,
+                    movimientosLila: 0, movimientosCordoba: 0, movimientosDetalle: [],
+                    entradasLila: 0, entradasCordoba: 0, salidasLila: 0, salidasCordoba: 0,
+                    actualLila: 0, actualCordoba: 0,
+                    finalLila: null, finalCordoba: null, fechaFinal: null,
+                    diferenciaLila: null, diferenciaCordoba: null
                 };
             }
             
@@ -590,23 +666,12 @@
             
             if (registrosCedis.length === 0) {
                 return {
-                    baseLila: 0,
-                    baseCordoba: 0,
-                    fechaBase: null,
-                    movimientosLila: 0,
-                    movimientosCordoba: 0,
-                    movimientosDetalle: [],
-                    entradasLila: 0,
-                    entradasCordoba: 0,
-                    salidasLila: 0,
-                    salidasCordoba: 0,
-                    actualLila: 0,
-                    actualCordoba: 0,
-                    finalLila: null,
-                    finalCordoba: null,
-                    fechaFinal: null,
-                    diferenciaLila: null,
-                    diferenciaCordoba: null
+                    baseLila: 0, baseCordoba: 0, fechaBase: null,
+                    movimientosLila: 0, movimientosCordoba: 0, movimientosDetalle: [],
+                    entradasLila: 0, entradasCordoba: 0, salidasLila: 0, salidasCordoba: 0,
+                    actualLila: 0, actualCordoba: 0,
+                    finalLila: null, finalCordoba: null, fechaFinal: null,
+                    diferenciaLila: null, diferenciaCordoba: null
                 };
             }
             
@@ -665,23 +730,12 @@
             
             if (!inventarioBase) {
                 return {
-                    baseLila: 0,
-                    baseCordoba: 0,
-                    fechaBase: null,
-                    movimientosLila: 0,
-                    movimientosCordoba: 0,
-                    movimientosDetalle: [],
-                    entradasLila: 0,
-                    entradasCordoba: 0,
-                    salidasLila: 0,
-                    salidasCordoba: 0,
-                    actualLila: 0,
-                    actualCordoba: 0,
-                    finalLila: null,
-                    finalCordoba: null,
-                    fechaFinal: null,
-                    diferenciaLila: null,
-                    diferenciaCordoba: null
+                    baseLila: 0, baseCordoba: 0, fechaBase: null,
+                    movimientosLila: 0, movimientosCordoba: 0, movimientosDetalle: [],
+                    entradasLila: 0, entradasCordoba: 0, salidasLila: 0, salidasCordoba: 0,
+                    actualLila: 0, actualCordoba: 0,
+                    finalLila: null, finalCordoba: null, fechaFinal: null,
+                    diferenciaLila: null, diferenciaCordoba: null
                 };
             }
             
@@ -718,6 +772,7 @@
             return enviosPendientes.filter(envio => {
                 if (envio.tarea === 'Envío de charolas a CEDIS FORANEOS') return extraerDestino(envio.destino) === cedis;
                 if (envio.tarea === 'Envío de charolas a COA') return envio.destino === cedis;
+                if (envio.tarea === 'Envío de charolas') return envio.destino === cedis;
                 return false;
             });
         }
@@ -747,7 +802,6 @@
                     semanaSelect.value = semanaActual;
                     actualizarDashboard();
                 } else {
-                    // Si no hay semanas, crear una default
                     const hoy = new Date();
                     const numSemana = obtenerNumeroSemana(hoy);
                     const año = hoy.getFullYear();
@@ -812,8 +866,8 @@
                             <div class="movimiento-item">
                                 <span>${fechaFormateada}</span>
                                 <span class="movimiento-tipo ${m.tipo === 'Envío' ? 'envio' : 'recepcion'}">${m.tipo}</span>
-                                <span style="color:#6B46C1;">${m.lila}</span>
-                                <span style="color:#DD6B20;">${m.cordoba}</span>
+                                <span><span class="tag-inline lila">LILA</span> <span class="val-num lila">${m.lila}</span></span>
+                                <span><span class="tag-inline cordoba">CÓRDOBA</span> <span class="val-num cordoba">${m.cordoba}</span></span>
                                 <span>${m.ruta}</span>
                             </div>
                         `;
@@ -831,8 +885,8 @@
                                 <span><strong>${e.id}</strong></span>
                                 <span>📅 ${formatearFechaSolo(e.fecha)}</span>
                                 <span>🚛 ${e.rutaUnidad || 'Sin ruta'}</span>
-                                <span style="color:#6B46C1;">${e.cantidadLila}</span>
-                                <span style="color:#DD6B20;">${e.cantidadCordoba}</span>
+                                <span><span class="tag-inline lila">LILA</span> <span class="val-num lila">${e.cantidadLila}</span></span>
+                                <span><span class="tag-inline cordoba">CÓRDOBA</span> <span class="val-num cordoba">${e.cantidadCordoba}</span></span>
                             </div>
                         `;
                     });
@@ -917,22 +971,40 @@
                         <div class="stat-main">
                             <span class="stat-main-label">Inventario actual</span>
                             <div class="stat-main-value">
-                                <div class="lila">🟣 ${actualLila.toLocaleString()}</div>
-                                <div class="cordoba">🟤 ${actualCordoba.toLocaleString()}</div>
+                                <div class="val-line">
+                                    <span class="tag lila">LILA</span>
+                                    <span class="num lila">${actualLila.toLocaleString()}</span>
+                                </div>
+                                <div class="val-line">
+                                    <span class="tag cordoba">CÓRDOBA</span>
+                                    <span class="num cordoba">${actualCordoba.toLocaleString()}</span>
+                                </div>
                             </div>
                         </div>
                         <div class="stat-row">
                             <span class="stat-label">Entradas</span>
                             <div class="stat-numbers">
-                                <span class="stat-number lila">🟣 ${entradasLila}</span>
-                                <span class="stat-number cordoba">🟤 ${entradasCordoba}</span>
+                                <span class="val-line">
+                                    <span class="tag lila">LILA</span>
+                                    <span class="num lila">${entradasLila}</span>
+                                </span>
+                                <span class="val-line">
+                                    <span class="tag cordoba">CÓRDOBA</span>
+                                    <span class="num cordoba">${entradasCordoba}</span>
+                                </span>
                             </div>
                         </div>
                         <div class="stat-row">
                             <span class="stat-label">Salidas</span>
                             <div class="stat-numbers">
-                                <span class="stat-number lila">🟣 ${salidasLila}</span>
-                                <span class="stat-number cordoba">🟤 ${salidasCordoba}</span>
+                                <span class="val-line">
+                                    <span class="tag lila">LILA</span>
+                                    <span class="num lila">${salidasLila}</span>
+                                </span>
+                                <span class="val-line">
+                                    <span class="tag cordoba">CÓRDOBA</span>
+                                    <span class="num cordoba">${salidasCordoba}</span>
+                                </span>
                             </div>
                         </div>
                         <div class="envios-ruta">
