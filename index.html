@@ -61,6 +61,70 @@
             .form-single { padding: 25px; }
             .quantity-row { grid-template-columns: 1fr; gap: 20px; }
         }
+
+        /* MODALES GENERALES */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 10000; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal-box { background: white; border-radius: 16px; padding: 30px; max-width: 520px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalIn 0.25s ease-out; max-height: 90vh; overflow-y: auto; }
+        @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-box h3 { font-size: 1.15rem; margin-bottom: 15px; color: #1A1F36; display: flex; align-items: center; gap: 10px; }
+        .modal-box p { color: #4A5568; font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px; }
+        .modal-box .modal-detail { background: #F8F9FC; border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid #E2E8F0; }
+        .modal-box .modal-detail-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; }
+        .modal-box .modal-detail-row strong { color: #1A1F36; }
+        .modal-box .modal-detail-row span { color: #4A5568; }
+        .modal-box .modal-detail-row.diff { border-top: 1px solid #E2E8F0; margin-top: 6px; padding-top: 10px; }
+        .modal-box .modal-detail-row.diff strong { color: #1A4A6F; }
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+        .modal-btn { padding: 12px 22px; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: none; transition: all 0.2s; text-transform: uppercase; }
+        .modal-btn.primary { background: linear-gradient(135deg, #0B2B4E 0%, #1A4A6F 100%); color: white; }
+        .modal-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(11,43,78,0.3); }
+        .modal-btn.secondary { background: #E2E8F0; color: #2D3748; }
+        .modal-btn.secondary:hover { background: #CBD5E0; }
+        .modal-btn.warning { background: #ED8936; color: white; }
+        .modal-btn.warning:hover { background: #DD6B20; }
+        .modal-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+        .modal-icon { font-size: 1.6rem; }
+        .warning-box { border-left: 4px solid #ED8936; }
+        .confirm-box { border-left: 4px solid #1A4A6F; }
+        .badge-diff-pos { color: #22543D; font-weight: 700; }
+        .badge-diff-neg { color: #742A2A; font-weight: 700; }
+
+        /* MODAL DE EVIDENCIA (envío / inventario) */
+        .evidence-box { border-left: 4px solid #2B6CB0; max-width: 560px; padding-top: 0; }
+        .evidence-header {
+            background: linear-gradient(135deg, #0B2B4E 0%, #1A4A6F 100%);
+            color: white; padding: 20px 24px; border-radius: 12px 12px 0 0;
+            margin: 0 -30px 20px -30px; display: flex; align-items: center; gap: 14px;
+        }
+        .evidence-header .icon { font-size: 1.8rem; }
+        .evidence-header h3 { color: white; font-size: 1.1rem; margin: 0; }
+        .evidence-header p { color: rgba(255,255,255,0.85); font-size: 0.8rem; margin: 0; }
+        .evidence-badge {
+            display: inline-block; background: #EBF8FF; color: #2B6CB0;
+            font-size: 0.7rem; font-weight: 700; padding: 4px 10px;
+            border-radius: 20px; letter-spacing: 0.5px; margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        .evidence-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+        .evidence-table td { padding: 9px 0; font-size: 0.9rem; border-bottom: 1px solid #EDF2F7; }
+        .evidence-table td:first-child { color: #718096; font-weight: 500; }
+        .evidence-table td:last-child { text-align: right; color: #1A1F36; font-weight: 600; }
+        .evidence-table tr.total td { border-bottom: none; padding-top: 14px; font-size: 1rem; }
+        .evidence-table tr.total td:last-child { color: #1A4A6F; font-size: 1.15rem; }
+        .evidence-datetime {
+            background: #F7FAFC; border: 1px dashed #CBD5E0; border-radius: 10px;
+            padding: 14px 16px; margin-bottom: 18px; display: flex; align-items: center;
+            gap: 12px; font-size: 0.85rem; color: #4A5568;
+        }
+        .evidence-datetime .clock { font-size: 1.4rem; }
+        .evidence-datetime strong { color: #1A1F36; display: block; font-size: 0.9rem; }
+        .evidence-datetime span { font-size: 0.78rem; color: #718096; }
+        .evidence-note {
+            font-size: 0.78rem; color: #718096; background: #FFFAF0;
+            border-left: 3px solid #ED8936; padding: 10px 12px; border-radius: 6px;
+            margin-bottom: 18px;
+        }
     </style>
 </head>
 <body>
@@ -87,8 +151,9 @@
     <div class="main-container">
         <div class="form-single">
             <form id="controlForm">
+                <!-- 1. SELECCIONA TU CEDIS -->
                 <div class="form-field">
-                    <label for="cedis">SELECCIONA CEDIS <span class="required">*</span></label>
+                    <label for="cedis">SELECCIONA TU CEDIS <span class="required">*</span></label>
                     <select id="cedis" required>
                         <option value="">SELECCIONE UN CEDIS</option>
                         <option value="COA">COA</option>
@@ -99,15 +164,22 @@
                     </select>
                 </div>
 
+                <!-- 2. TAREA A REALIZAR -->
                 <div class="form-field" id="fieldTarea" style="display: none;">
                     <label for="tarea">TAREA A REALIZAR <span class="required">*</span></label>
                     <select id="tarea">
                         <option value="">SELECCIONE UNA TAREA</option>
-                        <option value="1">1. ENVÍO DE CHAROLAS A CEDIS FORANEOS</option>
-                        <option value="2">2. RECEPCIÓN DE CHAROLAS EN CEDIS FORANEOS</option>
-                        <option value="3">3. ENVÍO DE CHAROLAS A COA</option>
-                        <option value="4">4. RECEPCIÓN DE CHAROLAS EN COA</option>
-                        <option value="5">5. REGISTRO DE INVENTARIO</option>
+                        <option value="envio">ENVÍO DE CHAROLAS</option>
+                        <option value="recepcion">RECEPCIÓN DE CHAROLAS</option>
+                        <option value="inventario">INVENTARIOS</option>
+                    </select>
+                </div>
+
+                <!-- 3. CEDIS DESTINO (solo envío) -->
+                <div class="form-field" id="fieldCedisDestino" style="display: none;">
+                    <label for="cedisDestino">CEDIS DESTINO <span class="required">*</span></label>
+                    <select id="cedisDestino">
+                        <option value="">SELECCIONE UN CEDIS</option>
                     </select>
                 </div>
 
@@ -121,11 +193,6 @@
                 <div class="form-field" id="fieldRuta" style="display: none;">
                     <label for="ruta">RUTA DE ENVÍO <span class="required">*</span></label>
                     <input type="text" id="ruta" maxlength="100" placeholder="Ej: RUTA 45">
-                </div>
-
-                <div class="form-field" id="fieldUnidad" style="display: none;">
-                    <label for="unidad">UNIDAD DE TRANSPORTE <span class="required">*</span></label>
-                    <input type="text" id="unidad" maxlength="100" placeholder="Ej: UNIT-001">
                 </div>
 
                 <div id="fieldCantidades" style="display: none;">
@@ -152,21 +219,108 @@
 
     <footer class="corporate-footer"><p>SISTEMA DE CONTROL DE CHAROLAS | TODOS LOS DERECHOS RESERVADOS © E.LUGO 2026</p></footer>
 
+    <!-- MODAL 1: Advertencia por diferencia (recepción) -->
+    <div class="modal-overlay" id="modalWarning">
+        <div class="modal-box warning-box">
+            <h3><span class="modal-icon">⚠️</span> LAS CANTIDADES NO COINCIDEN</h3>
+            <p id="modalWarningText">Las cantidades ingresadas no coinciden con lo enviado.</p>
+            <div class="modal-detail" id="modalWarningDetail"></div>
+            <p style="font-size: 0.85rem; color: #718096;">Puedes corregir las cantidades o continuar de todas formas. Si continúas, se ajustará el inventario del CEDIS de origen con la diferencia.</p>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn secondary" onclick="cerrarModalWarning()">CORREGIR CANTIDADES</button>
+                <button type="button" class="modal-btn warning" onclick="continuarDesdeWarning()">CONTINUAR DE TODAS FORMAS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Confirmación final (recepción) -->
+    <div class="modal-overlay" id="modalConfirm">
+        <div class="modal-box confirm-box">
+            <h3><span class="modal-icon">✅</span> CONFIRMAR REGISTRO</h3>
+            <p>Se va a registrar la siguiente recepción:</p>
+            <div class="modal-detail" id="modalConfirmDetail"></div>
+            <p style="font-size: 0.85rem; color: #718096;">Al confirmar, se registrará la recepción y el ajuste de inventario en el CEDIS de origen.</p>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn secondary" onclick="cerrarModalConfirm()">CANCELAR</button>
+                <button type="button" class="modal-btn primary" id="btnConfirmarRegistro" onclick="confirmarRegistro()">CONFIRMAR Y GUARDAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EVIDENCIA: ENVÍO -->
+    <div class="modal-overlay" id="modalEvidenciaEnvio">
+        <div class="modal-box evidence-box">
+            <div class="evidence-header">
+                <span class="icon">🚚</span>
+                <div>
+                    <h3>CONFIRMAR ENVÍO DE CHAROLAS</h3>
+                    <p>Verifica los datos antes de registrar</p>
+                </div>
+            </div>
+            <span class="evidence-badge">📋 Evidencia de registro</span>
+            <table class="evidence-table" id="evidenciaEnvioTabla"></table>
+            <div class="evidence-datetime">
+                <span class="clock">🕒</span>
+                <div>
+                    <strong id="evidenciaEnvioFecha">—</strong>
+                    <span id="evidenciaEnvioHora">—</span>
+                </div>
+            </div>
+            <div class="evidence-note">
+                ⚠️ Al confirmar, este envío quedará en tránsito y se descontará del inventario del CEDIS de origen.
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn secondary" onclick="cerrarEvidenciaEnvio()">CANCELAR</button>
+                <button type="button" class="modal-btn primary" id="btnConfirmarEnvio" onclick="confirmarEnvio()">CONFIRMAR Y GUARDAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EVIDENCIA: INVENTARIO -->
+    <div class="modal-overlay" id="modalEvidenciaInventario">
+        <div class="modal-box evidence-box">
+            <div class="evidence-header">
+                <span class="icon">📊</span>
+                <div>
+                    <h3>CONFIRMAR REGISTRO DE INVENTARIO</h3>
+                    <p>Verifica los datos antes de registrar</p>
+                </div>
+            </div>
+            <span class="evidence-badge">📋 Evidencia de registro</span>
+            <table class="evidence-table" id="evidenciaInventarioTabla"></table>
+            <div class="evidence-datetime">
+                <span class="clock">🕒</span>
+                <div>
+                    <strong id="evidenciaInventarioFecha">—</strong>
+                    <span id="evidenciaInventarioHora">—</span>
+                </div>
+            </div>
+            <div class="evidence-note">
+                ⚠️ Al confirmar, se sumarán estas cantidades al inventario del CEDIS seleccionado.
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn secondary" onclick="cerrarEvidenciaInventario()">CANCELAR</button>
+                <button type="button" class="modal-btn primary" id="btnConfirmarInventario" onclick="confirmarInventario()">CONFIRMAR Y GUARDAR</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz32ynxfGn932tFpNw59Ots0iNSU9p9nlPnlDnUQ4rn8i8plBDh1Z8yH4aAwSAYWMNF5g/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPXY7-hxwVYLjQsDOQyCvmKkqpKQY-Eil3AxiQn1-_zQTFJ9enw7Be9LU72AJUTUIguw/exec';
         
         let selectedEnvioId = null;
+        let envioSeleccionado = null;
 
         const cedisSelect = document.getElementById('cedis');
+        const cedisDestinoSelect = document.getElementById('cedisDestino');
         const tareaSelect = document.getElementById('tarea');
+        const fieldCedisDestino = document.getElementById('fieldCedisDestino');
         const fieldTarea = document.getElementById('fieldTarea');
         const fieldEnviosPendientes = document.getElementById('fieldEnviosPendientes');
         const fieldRuta = document.getElementById('fieldRuta');
-        const fieldUnidad = document.getElementById('fieldUnidad');
         const fieldCantidades = document.getElementById('fieldCantidades');
         const submitContainer = document.getElementById('submitContainer');
         const rutaInput = document.getElementById('ruta');
-        const unidadInput = document.getElementById('unidad');
         const listaEnviosDiv = document.getElementById('listaEnvios');
         const form = document.getElementById('controlForm');
         const messageDiv = document.getElementById('message');
@@ -200,15 +354,6 @@
             }
         }
 
-        function extraerDestino(destinoCompleto) {
-            if (!destinoCompleto) return '';
-            if (destinoCompleto.includes(' - ')) {
-                const partes = destinoCompleto.split(' - ');
-                return partes[1];
-            }
-            return destinoCompleto;
-        }
-
         function convertirAMayusculas(e) {
             if (e.target.value && e.target.type === 'text') e.target.value = e.target.value.toUpperCase();
         }
@@ -225,58 +370,81 @@
             messageDiv.textContent = text;
             messageDiv.style.display = 'block';
             messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 5000);
+            setTimeout(() => { messageDiv.style.display = 'none'; }, 5000);
         }
 
         function ocultarTodosLosCampos() {
             fieldTarea.style.display = 'none';
+            fieldCedisDestino.style.display = 'none';
             fieldEnviosPendientes.style.display = 'none';
             fieldRuta.style.display = 'none';
-            fieldUnidad.style.display = 'none';
             fieldCantidades.style.display = 'none';
             submitContainer.style.display = 'none';
-            tareaSelect.value = '';
+            tareaSelect.innerHTML = `
+                <option value="">SELECCIONE UNA TAREA</option>
+                <option value="envio">ENVÍO DE CHAROLAS</option>
+                <option value="recepcion">RECEPCIÓN DE CHAROLAS</option>
+                <option value="inventario">INVENTARIOS</option>
+            `;
+            cedisDestinoSelect.innerHTML = '<option value="">SELECCIONE UN CEDIS</option>';
             rutaInput.value = '';
-            unidadInput.value = '';
             charolaLila.value = '0';
             charolaCordoba.value = '0';
             listaEnviosDiv.innerHTML = '';
             selectedEnvioId = null;
+            envioSeleccionado = null;
         }
 
         function actualizarTareas() {
             const cedis = cedisSelect.value;
-            if (!cedis) { ocultarTodosLosCampos(); return; }
-            fieldTarea.style.display = 'block';
+            
+            fieldTarea.style.display = 'none';
+            fieldCedisDestino.style.display = 'none';
             fieldEnviosPendientes.style.display = 'none';
             fieldRuta.style.display = 'none';
-            fieldUnidad.style.display = 'none';
             fieldCantidades.style.display = 'none';
             submitContainer.style.display = 'none';
             selectedEnvioId = null;
+            envioSeleccionado = null;
+            listaEnviosDiv.innerHTML = '';
+            cedisDestinoSelect.innerHTML = '<option value="">SELECCIONE UN CEDIS</option>';
+            
+            tareaSelect.value = '';
+            
+            if (!cedis) return;
+            fieldTarea.style.display = 'block';
         }
 
-        async function cargarEnviosPendientes(cedisOrigen, tipo, cedisFiltro) {
+        function llenarCedisDestino() {
+            const cedis = cedisSelect.value;
+            cedisDestinoSelect.innerHTML = '<option value="">SELECCIONE UN CEDIS</option>';
+            const opciones = ['COA', 'MONTERREY', 'GUADALAJARA', 'HERMOSILLO', 'CANCUN'];
+            opciones.forEach(op => {
+                if (op !== cedis) {
+                    const opt = document.createElement('option');
+                    opt.value = op;
+                    opt.textContent = op;
+                    cedisDestinoSelect.appendChild(opt);
+                }
+            });
+        }
+
+        async function cargarEnviosPendientes() {
             showLoader();
             try {
-                const url = `${APPS_SCRIPT_URL}?action=getEnviosPendientes&cedisOrigen=${cedisOrigen}&tipo=${tipo}`;
+                const url = `${APPS_SCRIPT_URL}?action=getEnviosPendientesGeneral`;
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                console.log('Datos recibidos:', data);
+                const miCedis = cedisSelect.value;
                 
                 if (data.success && data.envios && data.envios.length > 0) {
-                    const enviosFiltrados = data.envios.filter(envio => {
-                        const destinoLimpio = extraerDestino(envio.destino);
-                        console.log(`Envío: ${envio.id}, Destino original: ${envio.destino}, Destino limpio: ${destinoLimpio}, Filtro: ${cedisFiltro}`);
-                        return destinoLimpio === cedisFiltro;
-                    });
+                    const enviosFiltrados = data.envios.filter(env => env.destino === miCedis);
                     
                     if (enviosFiltrados.length > 0) {
                         listaEnviosDiv.innerHTML = '';
                         enviosFiltrados.forEach(envio => {
+                            const total = (parseInt(envio.cantidadLila)||0) + (parseInt(envio.cantidadCordoba)||0);
                             const div = document.createElement('div');
                             div.className = 'envio-item';
                             div.setAttribute('data-id', envio.id);
@@ -285,26 +453,25 @@
                                 <div class="envio-row">
                                     <span class="envio-info">📅 ${formatearFechaSolo(envio.fecha)}</span>
                                     <span class="envio-info">🚛 ${envio.rutaUnidad || 'No registrado'}</span>
-                                    <span class="envio-info">🟣 ${envio.cantidadLila}</span>
-                                    <span class="envio-info">🟤 ${envio.cantidadCordoba}</span>
+                                    <span class="envio-info">📦 Origen: ${envio.origen}</span>
+                                    <span class="envio-info"><strong>Total ${total} charolas</strong></span>
                                 </div>
                             `;
-                            div.onclick = (function(id) {
+                            div.onclick = (function(env) {
                                 return function() {
                                     document.querySelectorAll('.envio-item').forEach(item => item.classList.remove('selected'));
                                     this.classList.add('selected');
-                                    selectedEnvioId = id;
+                                    selectedEnvioId = env.id;
+                                    envioSeleccionado = env;
                                 };
-                            })(envio.id);
+                            })(envio);
                             listaEnviosDiv.appendChild(div);
                         });
                     } else {
-                        listaEnviosDiv.innerHTML = `<p style="color: #E53E3E; padding: 8px;">⚠️ No hay envíos pendientes para ${cedisFiltro}</p>`;
-                        selectedEnvioId = null;
+                        listaEnviosDiv.innerHTML = `<p style="color: #E53E3E; padding: 8px;">⚠️ No hay envíos pendientes hacia ${miCedis}</p>`;
                     }
                 } else {
                     listaEnviosDiv.innerHTML = '<p style="color: #E53E3E; padding: 8px;">⚠️ No hay envíos pendientes</p>';
-                    selectedEnvioId = null;
                 }
             } catch(error) {
                 console.error(error);
@@ -318,45 +485,33 @@
             const cedis = cedisSelect.value;
             const tarea = tareaSelect.value;
             
-            if (!cedis || !tarea) {
-                fieldEnviosPendientes.style.display = 'none';
-                fieldRuta.style.display = 'none';
-                fieldUnidad.style.display = 'none';
-                fieldCantidades.style.display = 'none';
-                submitContainer.style.display = 'none';
-                return;
-            }
-            
-            fieldCantidades.style.display = 'block';
+            fieldCedisDestino.style.display = 'none';
+            fieldEnviosPendientes.style.display = 'none';
+            fieldRuta.style.display = 'none';
+            fieldCantidades.style.display = 'none';
+            submitContainer.style.display = 'none';
             selectedEnvioId = null;
+            envioSeleccionado = null;
             listaEnviosDiv.innerHTML = '';
+            rutaInput.value = '';
+            charolaLila.value = '0';
+            charolaCordoba.value = '0';
             
-            if (tarea === '1') {
+            if (!cedis || !tarea) return;
+            
+            if (tarea === 'envio') {
+                llenarCedisDestino();
+                fieldCedisDestino.style.display = 'block';
                 fieldRuta.style.display = 'block';
-                fieldUnidad.style.display = 'none';
-                fieldEnviosPendientes.style.display = 'none';
+                fieldCantidades.style.display = 'block';
                 submitContainer.style.display = 'block';
-            } else if (tarea === '2') {
+            } else if (tarea === 'recepcion') {
                 fieldEnviosPendientes.style.display = 'block';
-                fieldRuta.style.display = 'none';
-                fieldUnidad.style.display = 'none';
+                fieldCantidades.style.display = 'block';
                 submitContainer.style.display = 'block';
-                cargarEnviosPendientes('COA', 'recepcionForaneos', cedis);
-            } else if (tarea === '3') {
-                fieldUnidad.style.display = 'block';
-                fieldRuta.style.display = 'none';
-                fieldEnviosPendientes.style.display = 'none';
-                submitContainer.style.display = 'block';
-            } else if (tarea === '4') {
-                fieldEnviosPendientes.style.display = 'block';
-                fieldRuta.style.display = 'none';
-                fieldUnidad.style.display = 'none';
-                submitContainer.style.display = 'block';
-                cargarEnviosPendientes(cedis, 'recepcionCOA', 'COA');
-            } else if (tarea === '5') {
-                fieldEnviosPendientes.style.display = 'none';
-                fieldRuta.style.display = 'none';
-                fieldUnidad.style.display = 'none';
+                cargarEnviosPendientes();
+            } else if (tarea === 'inventario') {
+                fieldCantidades.style.display = 'block';
                 submitContainer.style.display = 'block';
             }
         }
@@ -370,66 +525,107 @@
                 showMessage('⚠️ DEBE INGRESAR AL MENOS UNA CHAROLA', 'error');
                 return false;
             }
-            
-            if (tarea === '1' && !rutaInput.value.trim()) { 
+            if (tarea === 'envio' && !cedisDestinoSelect.value) {
+                showMessage('⚠️ SELECCIONE EL CEDIS DESTINO', 'error');
+                return false;
+            }
+            if (tarea === 'envio' && !rutaInput.value.trim()) { 
                 showMessage('⚠️ CAPTURE LA RUTA', 'error'); 
                 return false; 
             }
-            if (tarea === '3' && !unidadInput.value.trim()) { 
-                showMessage('⚠️ CAPTURE LA UNIDAD', 'error'); 
-                return false; 
-            }
-            if ((tarea === '2' || tarea === '4') && !selectedEnvioId) { 
+            if (tarea === 'recepcion' && !selectedEnvioId) { 
                 showMessage('⚠️ SELECCIONE UN ENVÍO', 'error'); 
                 return false; 
             }
             return true;
         }
 
-        cedisSelect.addEventListener('change', actualizarTareas);
-        tareaSelect.addEventListener('change', actualizarCamposPorTarea);
-        
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // ===== MODALES RECEPCIÓN =====
+        function abrirModalWarning(lilaRec, cordobaRec) {
+            const lilaEnv = parseInt(envioSeleccionado.cantidadLila)||0;
+            const cordobaEnv = parseInt(envioSeleccionado.cantidadCordoba)||0;
+            const difLila = lilaEnv - lilaRec;
+            const difCordoba = cordobaEnv - cordobaRec;
+            
+            let texto = '';
+            if ((lilaRec + cordobaRec) < (lilaEnv + cordobaEnv)) texto = 'Las cantidades ingresadas son MENORES a lo enviado.';
+            else if ((lilaRec + cordobaRec) > (lilaEnv + cordobaEnv)) texto = 'Las cantidades ingresadas son MAYORES a lo enviado.';
+            else texto = 'Las cantidades por tipo no coinciden con lo enviado (aunque el total sea igual).';
+            
+            document.getElementById('modalWarningText').textContent = texto;
+            
+            document.getElementById('modalWarningDetail').innerHTML = `
+                <div class="modal-detail-row"><span>🟣 Lila enviada:</span><strong>${lilaEnv}</strong></div>
+                <div class="modal-detail-row"><span>🟣 Lila ingresada:</span><strong>${lilaRec}</strong></div>
+                <div class="modal-detail-row"><span>🟤 Córdoba enviada:</span><strong>${cordobaEnv}</strong></div>
+                <div class="modal-detail-row"><span>🟤 Córdoba ingresada:</span><strong>${cordobaRec}</strong></div>
+                <div class="modal-detail-row diff"><span>Ajuste al origen (lila):</span><strong class="${difLila>=0?'badge-diff-pos':'badge-diff-neg'}">${difLila>=0?'+':''}${difLila}</strong></div>
+                <div class="modal-detail-row"><span>Ajuste al origen (córdoba):</span><strong class="${difCordoba>=0?'badge-diff-pos':'badge-diff-neg'}">${difCordoba>=0?'+':''}${difCordoba}</strong></div>
+            `;
+            
+            document.getElementById('modalWarning').classList.add('active');
+        }
+
+        function cerrarModalWarning() {
+            document.getElementById('modalWarning').classList.remove('active');
+            charolaLila.focus();
+        }
+
+        function continuarDesdeWarning() {
+            document.getElementById('modalWarning').classList.remove('active');
+            abrirModalConfirm();
+        }
+
+        function abrirModalConfirm() {
+            const lilaRec = parseInt(charolaLila.value)||0;
+            const cordobaRec = parseInt(charolaCordoba.value)||0;
+            const lilaEnv = parseInt(envioSeleccionado.cantidadLila)||0;
+            const cordobaEnv = parseInt(envioSeleccionado.cantidadCordoba)||0;
+            const difLila = lilaEnv - lilaRec;
+            const difCordoba = cordobaEnv - cordobaRec;
+            
+            let ajusteHtml = '';
+            if (difLila !== 0 || difCordoba !== 0) {
+                ajusteHtml = `
+                    <div class="modal-detail-row diff"><span>Ajuste a ${envioSeleccionado.origen} (lila):</span><strong class="${difLila>=0?'badge-diff-pos':'badge-diff-neg'}">${difLila>=0?'+':''}${difLila}</strong></div>
+                    <div class="modal-detail-row"><span>Ajuste a ${envioSeleccionado.origen} (córdoba):</span><strong class="${difCordoba>=0?'badge-diff-pos':'badge-diff-neg'}">${difCordoba>=0?'+':''}${difCordoba}</strong></div>
+                `;
+            } else {
+                ajusteHtml = `<div class="modal-detail-row diff"><span>Ajuste al origen:</span><strong>Sin diferencia</strong></div>`;
+            }
+            
+            document.getElementById('modalConfirmDetail').innerHTML = `
+                <div class="modal-detail-row"><span>📄 Envío:</span><strong>${envioSeleccionado.id}</strong></div>
+                <div class="modal-detail-row"><span>📍 Origen:</span><strong>${envioSeleccionado.origen}</strong></div>
+                <div class="modal-detail-row"><span>🎯 Destino:</span><strong>${envioSeleccionado.destino}</strong></div>
+                <div class="modal-detail-row diff"><span>🟣 Lila recibida:</span><strong>${lilaRec}</strong></div>
+                <div class="modal-detail-row"><span>🟤 Córdoba recibida:</span><strong>${cordobaRec}</strong></div>
+                <div class="modal-detail-row"><span>📦 Total recibido:</span><strong>${lilaRec + cordobaRec} charolas</strong></div>
+                ${ajusteHtml}
+            `;
+            
+            document.getElementById('modalConfirm').classList.add('active');
+        }
+
+        function cerrarModalConfirm() {
+            document.getElementById('modalConfirm').classList.remove('active');
+        }
+
+        async function confirmarRegistro() {
+            document.getElementById('modalConfirm').classList.remove('active');
             
             const tarea = tareaSelect.value;
             const cedis = cedisSelect.value;
-            
-            if (!validarCampos()) return;
-            
             const params = new URLSearchParams();
             params.append('tarea', tarea);
-            
-            if (tarea === '1') {
-                params.append('cedis', 'COA');
-                params.append('cedisDestino', cedis);
-                params.append('rutaUnidad', rutaInput.value);
-                params.append('charolaLila', charolaLila.value);
-                params.append('charolaCordoba', charolaCordoba.value);
-            } else if (tarea === '2') {
-                params.append('cedis', cedis);
-                params.append('idRecibido', selectedEnvioId);
-                params.append('charolaLila', charolaLila.value);
-                params.append('charolaCordoba', charolaCordoba.value);
-            } else if (tarea === '3') {
-                params.append('cedis', cedis);
-                params.append('rutaUnidad', unidadInput.value);
-                params.append('charolaLila', charolaLila.value);
-                params.append('charolaCordoba', charolaCordoba.value);
-            } else if (tarea === '4') {
-                params.append('cedis', 'COA');
-                params.append('idRecibido', selectedEnvioId);
-                params.append('charolaLila', charolaLila.value);
-                params.append('charolaCordoba', charolaCordoba.value);
-            } else if (tarea === '5') {
-                params.append('cedis', cedis);
-                params.append('charolaLila', charolaLila.value);
-                params.append('charolaCordoba', charolaCordoba.value);
-            }
+            params.append('cedis', cedis);
+            params.append('charolaLila', charolaLila.value);
+            params.append('charolaCordoba', charolaCordoba.value);
+            params.append('idRecibido', selectedEnvioId || '');
             
             showLoader();
-            const submitBtn = document.querySelector('.btn-submit');
-            submitBtn.disabled = true;
+            const btn = document.getElementById('btnConfirmarRegistro');
+            btn.disabled = true;
             
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
@@ -437,9 +633,7 @@
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: params.toString()
                 });
-                
                 const result = await response.json();
-                
                 if (result.success) {
                     showMessage('✅ REGISTRO GUARDADO', 'success');
                     cedisSelect.value = '';
@@ -452,7 +646,187 @@
                 showMessage('❌ ERROR: ' + error.message, 'error');
             } finally {
                 hideLoader();
-                submitBtn.disabled = false;
+                btn.disabled = false;
+            }
+        }
+
+        // ===== FECHA/HORA =====
+        function obtenerFechaHoraActual() {
+            const ahora = new Date();
+            const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Mexico_City' };
+            const opcionesHora = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'America/Mexico_City' };
+            let fechaTxt = ahora.toLocaleDateString('es-MX', opcionesFecha);
+            fechaTxt = fechaTxt.charAt(0).toUpperCase() + fechaTxt.slice(1);
+            const horaTxt = ahora.toLocaleTimeString('es-MX', opcionesHora);
+            return { fecha: fechaTxt, hora: horaTxt };
+        }
+
+        // ===== MODAL EVIDENCIA: ENVÍO =====
+        function abrirEvidenciaEnvio() {
+            const cedis = cedisSelect.value;
+            const destino = cedisDestinoSelect.value;
+            const ruta = rutaInput.value || 'No especificada';
+            const lila = parseInt(charolaLila.value) || 0;
+            const cordoba = parseInt(charolaCordoba.value) || 0;
+            const total = lila + cordoba;
+            const { fecha, hora } = obtenerFechaHoraActual();
+            
+            document.getElementById('evidenciaEnvioTabla').innerHTML = `
+                <tr><td>CEDIS Origen</td><td>${cedis}</td></tr>
+                <tr><td>CEDIS Destino</td><td>${destino}</td></tr>
+                <tr><td>Ruta / Unidad</td><td>${ruta}</td></tr>
+                <tr><td>🟣 Charola Lila</td><td>${lila}</td></tr>
+                <tr><td>🟤 Charola Córdoba</td><td>${cordoba}</td></tr>
+                <tr class="total"><td>Total charolas</td><td>${total}</td></tr>
+            `;
+            document.getElementById('evidenciaEnvioFecha').textContent = fecha;
+            document.getElementById('evidenciaEnvioHora').textContent = 'Hora de registro: ' + hora;
+            document.getElementById('modalEvidenciaEnvio').classList.add('active');
+        }
+
+        function cerrarEvidenciaEnvio() {
+            document.getElementById('modalEvidenciaEnvio').classList.remove('active');
+        }
+
+        async function confirmarEnvio() {
+            document.getElementById('modalEvidenciaEnvio').classList.remove('active');
+            
+            const tarea = tareaSelect.value;
+            const cedis = cedisSelect.value;
+            const params = new URLSearchParams();
+            params.append('tarea', tarea);
+            params.append('cedis', cedis);
+            params.append('charolaLila', charolaLila.value);
+            params.append('charolaCordoba', charolaCordoba.value);
+            params.append('cedisDestino', cedisDestinoSelect.value);
+            params.append('rutaUnidad', rutaInput.value);
+            
+            showLoader();
+            const btn = document.getElementById('btnConfirmarEnvio');
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showMessage('✅ ENVÍO REGISTRADO CORRECTAMENTE', 'success');
+                    cedisSelect.value = '';
+                    ocultarTodosLosCampos();
+                } else {
+                    showMessage('❌ ERROR: ' + (result.error || 'No se pudo guardar'), 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showMessage('❌ ERROR: ' + error.message, 'error');
+            } finally {
+                hideLoader();
+                btn.disabled = false;
+            }
+        }
+
+        // ===== MODAL EVIDENCIA: INVENTARIO =====
+        function abrirEvidenciaInventario() {
+            const cedis = cedisSelect.value;
+            const lila = parseInt(charolaLila.value) || 0;
+            const cordoba = parseInt(charolaCordoba.value) || 0;
+            const total = lila + cordoba;
+            const { fecha, hora } = obtenerFechaHoraActual();
+            
+            document.getElementById('evidenciaInventarioTabla').innerHTML = `
+                <tr><td>CEDIS</td><td>${cedis}</td></tr>
+                <tr><td>🟣 Charola Lila</td><td>${lila}</td></tr>
+                <tr><td>🟤 Charola Córdoba</td><td>${cordoba}</td></tr>
+                <tr class="total"><td>Total charolas</td><td>${total}</td></tr>
+            `;
+            document.getElementById('evidenciaInventarioFecha').textContent = fecha;
+            document.getElementById('evidenciaInventarioHora').textContent = 'Hora de registro: ' + hora;
+            document.getElementById('modalEvidenciaInventario').classList.add('active');
+        }
+
+        function cerrarEvidenciaInventario() {
+            document.getElementById('modalEvidenciaInventario').classList.remove('active');
+        }
+
+        async function confirmarInventario() {
+            document.getElementById('modalEvidenciaInventario').classList.remove('active');
+            
+            const tarea = tareaSelect.value;
+            const cedis = cedisSelect.value;
+            const params = new URLSearchParams();
+            params.append('tarea', tarea);
+            params.append('cedis', cedis);
+            params.append('charolaLila', charolaLila.value);
+            params.append('charolaCordoba', charolaCordoba.value);
+            
+            showLoader();
+            const btn = document.getElementById('btnConfirmarInventario');
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showMessage('✅ INVENTARIO REGISTRADO CORRECTAMENTE', 'success');
+                    cedisSelect.value = '';
+                    ocultarTodosLosCampos();
+                } else {
+                    showMessage('❌ ERROR: ' + (result.error || 'No se pudo guardar'), 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showMessage('❌ ERROR: ' + error.message, 'error');
+            } finally {
+                hideLoader();
+                btn.disabled = false;
+            }
+        }
+
+        // ===== EVENTOS =====
+        cedisSelect.addEventListener('change', actualizarTareas);
+        tareaSelect.addEventListener('change', actualizarCamposPorTarea);
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const tarea = tareaSelect.value;
+            
+            if (!validarCampos()) return;
+            
+            // Recepción: flujo de modales de validación
+            if (tarea === 'recepcion') {
+                const lilaRec = parseInt(charolaLila.value)||0;
+                const cordobaRec = parseInt(charolaCordoba.value)||0;
+                const lilaEnv = parseInt(envioSeleccionado.cantidadLila)||0;
+                const cordobaEnv = parseInt(envioSeleccionado.cantidadCordoba)||0;
+                
+                const coincide = (lilaRec === lilaEnv && cordobaRec === cordobaEnv);
+                
+                if (!coincide) {
+                    abrirModalWarning(lilaRec, cordobaRec);
+                    return;
+                }
+                abrirModalConfirm();
+                return;
+            }
+            
+            // Envío: modal de evidencia
+            if (tarea === 'envio') {
+                abrirEvidenciaEnvio();
+                return;
+            }
+            
+            // Inventario: modal de evidencia
+            if (tarea === 'inventario') {
+                abrirEvidenciaInventario();
+                return;
             }
         });
         
